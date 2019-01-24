@@ -11,3 +11,6 @@ This is my Compiler Project written in TypeScript. These intructions will descri
 
 # Using Gulp
 Run `gulp` in the `Compiler` directory to have it start watching for changes in the .ts files in the source/scripts directory as well as .css files in the source/styles directory.
+
+# Using the Compiler
+Open `index.html` in your browser of choice to see the compiler and interact with it!
