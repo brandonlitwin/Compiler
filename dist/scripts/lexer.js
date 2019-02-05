@@ -6,8 +6,7 @@ var TSC;
         }
         Lexer.lex = function () {
             {
-                // Grab the "raw" source code.
-                var sourceCode = document.getElementById("taSourceCode").value;
+                return tokens;
             }
         };
         return Lexer;

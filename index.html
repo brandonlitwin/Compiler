@@ -11,20 +11,21 @@
 	<!--Loading JQuery-->
 	<script type="text/javascript" src="codemirror/js/jquery.min.js"></script>
 	<script type="text/javascript" src="codemirror/plugin/lib/codemirror.js"></script>
-	<script type="text/javascript" src="codemirror/js/default.js"></script>
-    <h1>Project One Compiler</h1>
+	<!--script type="text/javascript" src="codemirror/js/default.js"></script-->
+	<h1>Project One Compiler</h1>
 
     <div>
         <div class="source">
+			<h2>Input</h2>
 			<textarea id="taSourceCode" class="codemirror-textarea"></textarea><br>
 			<div style="text-align:left;">
 				<input type="button" id="btnCompile" value="Compile" onclick="btnCompile_click();"/>
 			</div> 
+			<h2>Output</h2>
             <textarea id="taOutput"></textarea>
         </div>        
 	</div>
-	
-    <script type="text/javascript" src="dist/scripts/lexer.js"></script>	
+	<script type="text/javascript" src="dist/scripts/lexer.js"></script>	
     <script type="text/javascript" src="dist/scripts/globals.js"></script>	
     <script type="text/javascript">
 		 function init() {
@@ -41,11 +42,16 @@
 	        // This is executed as a result of the user pressing the 
 	        // "compile" button between the two text areas, above.  
 			// Note the <input> element's event handler: onclick="btnCompile_click();
-			console.log('hello');
 	        init();
-	        putMessage("Compilation Started");
+			putMessage("Compilation Started");
+			var code = document.getElementById("taSourceCode");
+    		var editor = CodeMirror.fromTextArea(code, {
+        		lineNumbers: true
+			});
+			tokens = editor.getValue();
+
 	        // Grab the tokens from the lexer . . .
-	        tokens = _Lexer.lex();
+			_Lexer.lex();
 	        putMessage("Lex returned [" + tokens + "]");
 	      
 	    }
@@ -56,6 +62,7 @@
     
     
 	 	
-    </script>
+	</script>
+	
 </body>
 </html>
