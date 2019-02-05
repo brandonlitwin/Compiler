@@ -1,7 +1,7 @@
 /* lexer.ts  */
 var TSC;
 (function (TSC) {
-    var Lexer = (function () {
+    var Lexer = /** @class */ (function () {
         function Lexer() {
         }
         Lexer.lex = function () {
@@ -11,6 +11,6 @@ var TSC;
             }
         };
         return Lexer;
-    })();
+    }());
     TSC.Lexer = Lexer;
 })(TSC || (TSC = {}));

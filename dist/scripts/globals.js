@@ -1,8 +1,3 @@
-/*
-var onDocumentLoad = function() {
-    TSOS.Control.hostInit();
-};
-*/
 var _Lexer = TSC.Lexer;
 // Global variables
 var tokens = "";
