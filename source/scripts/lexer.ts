@@ -11,9 +11,25 @@ module TSC
 							new RegExp('}'),
 							new RegExp('[a-z]'),
 							new RegExp('='),
-							//new RegExp('$'),
-							//new RegExp(' '),
-							new RegExp('[0-9]')
+							new RegExp('\$'),
+							new RegExp('\s'),
+							new RegExp('[0-9]'),
+							new RegExp('\\+'),
+							new RegExp('\\('),
+							new RegExp('\\)'),
+							new RegExp('print'),
+							new RegExp('while'),
+							new RegExp('if'),
+							new RegExp('int'),
+							new RegExp('string'),
+							new RegExp('boolean'),
+							new RegExp('true'),
+							new RegExp('false'),
+							new RegExp('=='),
+							new RegExp('!='),
+							new RegExp('\\"'),
+							new RegExp('\\/*'),
+							new RegExp('\\*/'),
 				];
 				var foundArray = [];
 
