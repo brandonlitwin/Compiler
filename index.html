@@ -53,7 +53,10 @@
 	        // Grab the tokens from the lexer . . .
 			//putMessage(_Lexer.lex());
 			putMessage(_Lexer.lex());
-	        putMessage("Lex returned [" + tokens + "]");
+			if (lexErrorFound)
+				putMessage("Compilation stopped due to Lexer error\n");
+			else
+				putMessage("Compilation finished with no errors\n");
 	      
 	    }
     

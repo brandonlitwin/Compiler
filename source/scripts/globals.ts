@@ -6,3 +6,4 @@ var _Lexer = TSC.Lexer;
     var currentToken = "";
     var errorCount = 0;
     var EOF = "$";
+    var lexErrorFound = false;

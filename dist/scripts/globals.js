@@ -5,3 +5,4 @@ var tokenIndex = 0;
 var currentToken = "";
 var errorCount = 0;
 var EOF = "$";
+var lexErrorFound = false;
