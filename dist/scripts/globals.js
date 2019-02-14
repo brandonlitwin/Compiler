@@ -10,3 +10,5 @@ var lastTokenIndex = 0;
 var lastTokenTypeFound = "";
 var lastToken = "";
 var lexErrorCount = 0;
+var currentTokenIndex = 0;
+var programCount = 1;

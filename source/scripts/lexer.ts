@@ -46,7 +46,7 @@ module TSC
 				*/
 
 				var lextext = "Lexing program 1...\n";
-				for (var currentTokenIndex = 0; currentTokenIndex < tokens.length; currentTokenIndex++) {
+				for (currentTokenIndex; currentTokenIndex < tokens.length; currentTokenIndex++) {
 					var tokenFound = false;
 					var currentChar = tokens.charAt(currentTokenIndex);
 					if (currentToken == "")
@@ -111,6 +111,12 @@ module TSC
 										tokenFound = true;
 										currentToken = "";
 										lastTokenTypeFound = "Symbol";
+									}
+									if (Symbols[regex] == Symbols['T_EOP']) {
+										lextext += "Finished program " + programCount + "\n";
+										programCount++;
+										if (currentTokenIndex < tokens.length - 1)
+											lextext += "Lexing program " + programCount + "...\n";
 									}
 									
 								} 
