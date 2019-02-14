@@ -6,90 +6,68 @@ module TSC
 		public static lex() {
 		    {
 				// Creating all the RegEx for the grammar
-				var allRegex = [];
-				allRegex = [new RegExp('{'), 
-							new RegExp('}'),
-							new RegExp('[a-z]'),
-							new RegExp('='),
-							new RegExp('\\$'),
-							new RegExp('\\s'),
-							new RegExp('[0-9]'),
-							new RegExp('\\+'),
-							new RegExp('\\('),
-							new RegExp('\\)'),
-							new RegExp('print'),
-							new RegExp('while'),
-							new RegExp('if'),
-							new RegExp('int'),
-							new RegExp('string'),
-							new RegExp('boolean'),
-							new RegExp('true'),
-							new RegExp('false'),
-							new RegExp('=='),
-						    new RegExp('!'),
-							new RegExp('\\"'),
-							new RegExp('\\/\\*'),
-							new RegExp('\\*\\/'),
-				];
+				var allRegex = {
+					T_L_BRACE: new RegExp('{'), 
+					T_R_BRACE: new RegExp('}'),
+					T_ID: new RegExp('[a-z]'),
+					T_ASSIGNMENT_OP: new RegExp('='),
+					T_EOP: new RegExp('\\$'),
+					T_SPACE: new RegExp('\\s'),
+					T_DIGIT: new RegExp('[0-9]'),
+					T_ADDITION_OP: new RegExp('\\+'),
+					T_L_PAREN: new RegExp('\\('),
+					T_R_PAREN: new RegExp('\\)'),
+					T_PRINT: new RegExp('print'),
+					T_WHILE: new RegExp('while'),
+					T_IF: new RegExp('if'),
+					T_INT: new RegExp('int'),
+					T_STRING: new RegExp('string'),
+					T_BOOLEAN: new RegExp('boolean'),
+					T_TRUE: new RegExp('true'),
+					T_FALSE: new RegExp('false'),
+					T_EQUALS: new RegExp('=='),
+					T_NOT_EQUAL: new RegExp('!='),
+					T_QUOTE: new RegExp('\\"'),
+					T_BEGIN_COMMENT: new RegExp('\\/\\*'),
+					T_END_COMMENT: new RegExp('\\*\\/'),
+				};
 
 				var lextext = "Lexing program 1...\n";
 				for (var i = 0; i < tokens.length; i++) {
 					var tokenFound = false;
-					for (var j = 0; j < allRegex.length; j++) {
+					for (var regex in allRegex) {
 						if (!lexErrorFound) {
-							if (allRegex[j].test(tokens.charAt(i))) {
-								// Check for !=, because just ! is invalid
-								if (allRegex[j] == "/!/") {
-									if (tokens.charAt(i+1) == '=') {
-										lextext += "Found Token != at index " + i + "\n";
+							var currentChar = tokens.charAt(i);
+							if (allRegex[regex].test(currentChar)) {
+								// Check for ==
+								if (currentChar.concat(tokens.charAt(i+1)) == "==") {
+									lextext += "Found Token T_EQUALS [ == ] at index " + i + "\n";
+									i++;
+								}
+								else {
+									lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + i +  "\n";
+								}	
+								tokenFound = true;
+							}
+							else {
+								if (regex == "T_END_COMMENT" && tokenFound == false) {
+									// Check for !=, because just ! is invalid
+									if (currentChar.concat(tokens.charAt(i+1)) == "!=") {
+										lextext += "Found Token T_NOT_EQUAL [ != ] at index " + i + "\n";
 										i++;
 									} else {
 										lextext += "Error: Found Invalid Token " + tokens.charAt(i) + " at index " + i + " \n";
 										lexErrorFound = true;
 									}
-								} else {
-									lextext += "Found Token " + tokens.charAt(i) + " at index " + i +  "\n";
-								}	
-								tokenFound = true;
-							}
-							else {
-								if (j == allRegex.length-1 && tokenFound == false) {
-									lextext += "Error: Found Invalid Token " + tokens.charAt(i) + " at index " + i + " \n";
-									lexErrorFound = true;
+									
 								}
 									
 							}
 						}
-							
-							
+									
 					}
 				}
-				
-				return lextext;
-				/*var array;
-				for (var j = 0; j < allRegex.length; j++) {
-					while ((array = allRegex[j].exec(tokens)) != null) {
-						console.log("Found Token " + array[0] + allRegex[j].lastIndex + "\n");
-						console.log(array);
-						console.log(array['index']);
-						//foundArray.push(array[0]);
-						foundArray[array['index']] = array[0];
-						//console.log(foundArray);
-					}
-					if (!allRegex[j].test(tokens)) {
-						lextext += "Error: Found Invalid Token " + tokens + "\n";
-					}
-					
-					
-				}
-				console.log("Final array is " );
-				console.log(foundArray);
-				for (var i = 0; i < foundArray.length; i++) {
-					if (foundArray != undefined)
-						lextext += "Found Token " + foundArray[i] + " at index " + i + "\n";
-				}
-				return lextext;*/
-				
+				return lextext;	
 		    }
 		}
 	}
