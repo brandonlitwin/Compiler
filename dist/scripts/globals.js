@@ -6,3 +6,5 @@ var currentToken = "";
 var errorCount = 0;
 var EOF = "$";
 var lexErrorFound = false;
+var lastTokenIndex = 0;
+var lastTokenTypeFound = "";
