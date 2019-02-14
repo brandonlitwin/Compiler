@@ -50,14 +50,11 @@
 			});
 			tokens = editor.getValue();
 
-	        // Grab the tokens from the lexer . . .
-			//putMessage(_Lexer.lex());
+			console.log(morePrograms);
 			putMessage(_Lexer.lex());
-			if (lexErrorFound)
-				putMessage("Compilation stopped due to " + lexErrorCount + " Lexer errors\n");
-			else
-				putMessage("Compilation finished with no errors\n");
-	      
+				if (errorText != "")
+					putMessage(errorText);
+				
 	    }
     
 	    function putMessage(msg) {

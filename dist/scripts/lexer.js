@@ -41,10 +41,11 @@ var TSC;
                 // 4. Digit
                 // 5. Char
                 /*
-                Lexer TODO: Print out errors again. Make it work for multiple programs. Have lexer fix a missing $.
+                Lexer TODO: Fix keyword lexing. Make it work for multiple programs. Have lexer fix a missing $.
                 */
                 var lextext = "Lexing program 1...\n";
                 for (currentTokenIndex; currentTokenIndex < tokens.length; currentTokenIndex++) {
+                    console.log(currentTokenIndex);
                     var tokenFound = false;
                     var currentChar = tokens.charAt(currentTokenIndex);
                     if (currentToken == "")
@@ -54,7 +55,8 @@ var TSC;
                     // Check for keyword
                     for (var regex in Keywords) {
                         if (Keywords[regex].test(currentToken)) {
-                            lextext += "Found Token " + regex + " [ " + currentToken + " ] " + " at index " + currentTokenIndex + "\n";
+                            if (!lexErrorFound)
+                                lextext += "Found Token " + regex + " [ " + currentToken + " ] " + " at index " + currentTokenIndex + "\n";
                             lastTokenIndex = currentTokenIndex;
                             tokenFound = true;
                             currentToken = "";
@@ -64,24 +66,21 @@ var TSC;
                     if (!tokenFound) {
                         // Not keyword, check for id
                         if (T_ID.test(currentChar)) {
-                            //lextext += "Found Token T_ID [ " + currentToken + " ] " + " at index " + currentTokenIndex +  "\n";
                             if (lastTokenTypeFound != "ID") {
                                 lastTokenIndex = currentTokenIndex;
                             }
                             tokenFound = true;
-                            //currentToken = "";
-                            //lastToken = lastToken + currentToken;
                             lastTokenTypeFound = "ID";
                         }
                         else {
                             // Not id, check for symbol
                             for (var regex in Symbols) {
                                 if (Symbols[regex].test(currentChar)) {
-                                    //lastTokenIndex = currentTokenIndex;
                                     // If found symbol, print all last IDs
                                     if (lastTokenTypeFound == "ID") {
                                         while (lastTokenIndex < currentTokenIndex) {
-                                            lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at index " + lastTokenIndex + "\n";
+                                            if (!lexErrorFound)
+                                                lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at index " + lastTokenIndex + "\n";
                                             lastTokenIndex++;
                                         }
                                     }
@@ -92,7 +91,8 @@ var TSC;
                                         currentTokenIndex++;
                                         currentToken = currentChar + tokens.charAt(currentTokenIndex);
                                         if (Symbols['T_EQUALS'].test(currentToken)) {
-                                            lextext += "Found Token T_EQUALS [ " + currentToken + " ] " + " at index " + lastTokenIndex + "\n";
+                                            if (!lexErrorFound)
+                                                lextext += "Found Token T_EQUALS [ " + currentToken + " ] " + " at index " + lastTokenIndex + "\n";
                                             lastTokenIndex = currentTokenIndex;
                                             tokenFound = true;
                                             currentToken = "";
@@ -104,7 +104,8 @@ var TSC;
                                         }
                                     }
                                     if (!tokenFound) {
-                                        lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                        if (!lexErrorFound)
+                                            lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
                                         lastTokenIndex = currentTokenIndex;
                                         tokenFound = true;
                                         currentToken = "";
@@ -112,6 +113,7 @@ var TSC;
                                     }
                                     if (Symbols[regex] == Symbols['T_EOP']) {
                                         lextext += "Finished program " + programCount + "\n";
+                                        lexErrorFound = false;
                                         programCount++;
                                         if (currentTokenIndex < tokens.length - 1)
                                             lextext += "Lexing program " + programCount + "...\n";
@@ -121,7 +123,8 @@ var TSC;
                             if (!tokenFound) {
                                 // Not symbol, check digit
                                 if (T_DIGIT.test(currentChar)) {
-                                    lextext += "Found Token T_DIGIT [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                    if (!lexErrorFound)
+                                        lextext += "Found Token T_DIGIT [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
                                     lastTokenIndex = currentTokenIndex;
                                     tokenFound = true;
                                     currentToken = "";
@@ -131,7 +134,8 @@ var TSC;
                                     // check for !=
                                     currentToken = currentChar + tokens.charAt(currentTokenIndex + 1);
                                     if (Symbols['T_NOT_EQUAL'].test(currentToken)) {
-                                        lextext += "Found Token T_NOT_EQUAL [ " + currentToken + " ] " + " at index " + currentTokenIndex + "\n";
+                                        if (!lexErrorFound)
+                                            lextext += "Found Token T_NOT_EQUAL [ " + currentToken + " ] " + " at index " + currentTokenIndex + "\n";
                                         lastTokenIndex = currentTokenIndex;
                                         currentTokenIndex++;
                                         tokenFound = true;
@@ -140,10 +144,22 @@ var TSC;
                                     }
                                     else {
                                         currentToken = lastToken;
-                                        lextext += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                        if (!lexErrorFound)
+                                            lextext += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
                                         lexErrorFound = true;
                                         lexErrorCount++;
-                                        return lextext;
+                                        errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!";
+                                        console.log(currentTokenIndex);
+                                        if (currentTokenIndex < tokens.length - 1) {
+                                            morePrograms = true;
+                                        }
+                                        else {
+                                            morePrograms = false;
+                                        }
+                                        console.log(morePrograms);
+                                        console.log(lextext);
+                                        console.log(tokens);
+                                        lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
                                     }
                                 }
                             }
