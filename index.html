@@ -54,7 +54,7 @@
 			//putMessage(_Lexer.lex());
 			putMessage(_Lexer.lex());
 			if (lexErrorFound)
-				putMessage("Compilation stopped due to Lexer error\n");
+				putMessage("Compilation stopped due to " + lexErrorCount + " Lexer errors\n");
 			else
 				putMessage("Compilation finished with no errors\n");
 	      

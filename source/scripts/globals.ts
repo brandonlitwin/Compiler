@@ -10,3 +10,4 @@ var _Lexer = TSC.Lexer;
     var lastTokenIndex = 0;
     var lastTokenTypeFound = "";
     var lastToken = "";
+    var lexErrorCount = 0;

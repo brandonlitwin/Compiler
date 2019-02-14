@@ -41,6 +41,9 @@ module TSC
 				// 3. Symbol
 				// 4. Digit
 				// 5. Char
+				/* 
+				Lexer TODO: Print out errors again. Make it work for multiple programs. Have lexer fix a missing $.
+				*/
 
 				var lextext = "Lexing program 1...\n";
 				for (var currentTokenIndex = 0; currentTokenIndex < tokens.length; currentTokenIndex++) {
@@ -130,8 +133,14 @@ module TSC
 										tokenFound = true;
 										currentToken = "";
 										lastTokenTypeFound = "Symbol";
+									} else {
+										currentToken = lastToken;
+										lextext += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+										lexErrorFound = true;
+										lexErrorCount++;
+										return lextext;
 									}
-									currentToken = lastToken;
+									
 								}
 							}
 						}
