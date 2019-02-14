@@ -7,39 +7,33 @@ var TSC;
         Lexer.lex = function () {
             {
                 // Creating all the RegEx for the grammar
-                var allRegex = {
-                    Keywords: Keywords,
-                    Symbols: Symbols,
-                    T_ID: T_ID,
-                    T_DIGIT: T_DIGIT
-                };
                 var Keywords = {
-                    T_PRINT: new RegExp('print'),
-                    T_WHILE: new RegExp('while'),
-                    T_IF: new RegExp('if'),
-                    T_INT: new RegExp('int'),
-                    T_STRING: new RegExp('string'),
-                    T_BOOLEAN: new RegExp('boolean'),
-                    T_TRUE: new RegExp('true'),
-                    T_FALSE: new RegExp('false')
+                    T_PRINT: new RegExp('^print$'),
+                    T_WHILE: new RegExp('^while$'),
+                    T_IF: new RegExp('^if$'),
+                    T_INT: new RegExp('^int$'),
+                    T_STRING: new RegExp('^string$'),
+                    T_BOOLEAN: new RegExp('^boolean$'),
+                    T_TRUE: new RegExp('^true$'),
+                    T_FALSE: new RegExp('^false$')
                 };
                 var Symbols = {
-                    T_L_BRACE: new RegExp('{'),
-                    T_R_BRACE: new RegExp('}'),
-                    T_EOP: new RegExp('\\$'),
-                    T_SPACE: new RegExp('\\s'),
-                    T_ADDITION_OP: new RegExp('\\+'),
-                    T_L_PAREN: new RegExp('\\('),
-                    T_R_PAREN: new RegExp('\\)'),
-                    T_EQUALS: new RegExp('=='),
-                    T_NOT_EQUAL: new RegExp('!='),
-                    T_ASSIGNMENT_OP: new RegExp('='),
-                    T_QUOTE: new RegExp('\\"'),
-                    T_BEGIN_COMMENT: new RegExp('\\/\\*'),
-                    T_END_COMMENT: new RegExp('\\*\\/')
+                    T_L_BRACE: new RegExp('^{$'),
+                    T_R_BRACE: new RegExp('^}$'),
+                    T_EOP: new RegExp('^\\$$'),
+                    T_SPACE: new RegExp('^\\s$'),
+                    T_ADDITION_OP: new RegExp('^\\+$'),
+                    T_L_PAREN: new RegExp('^\\($'),
+                    T_R_PAREN: new RegExp('^\\)$'),
+                    T_EQUALS: new RegExp('^==$'),
+                    T_NOT_EQUAL: new RegExp('^!=$'),
+                    T_ASSIGNMENT_OP: new RegExp('^=$'),
+                    T_QUOTE: new RegExp('^\\"$'),
+                    T_BEGIN_COMMENT: new RegExp('^\\/\\*$'),
+                    T_END_COMMENT: new RegExp('^\\*\\/$')
                 };
-                var T_ID = new RegExp('[a-z]');
-                var T_DIGIT = new RegExp('[0-9]');
+                var T_ID = new RegExp('^[a-z]$');
+                var T_DIGIT = new RegExp('^[0-9]$');
                 // Lex hierarchy:
                 // 1. Keyword
                 // 2. ID
@@ -50,7 +44,10 @@ var TSC;
                 for (var currentTokenIndex = 0; currentTokenIndex < tokens.length; currentTokenIndex++) {
                     var tokenFound = false;
                     var currentChar = tokens.charAt(currentTokenIndex);
-                    currentToken = currentToken + currentChar;
+                    if (currentToken == "")
+                        currentToken = currentChar;
+                    else
+                        currentToken = currentToken + currentChar;
                     // Check for keyword
                     for (var regex in Keywords) {
                         if (Keywords[regex].test(currentToken)) {
@@ -63,24 +60,34 @@ var TSC;
                     }
                     if (!tokenFound) {
                         // Not keyword, check for id
-                        if (T_ID.test(currentToken)) {
-                            lextext += "Found Token T_ID [ " + currentToken + " ] " + " at index " + currentTokenIndex + "\n";
-                            lastTokenIndex = currentTokenIndex;
+                        if (T_ID.test(currentChar)) {
+                            //lextext += "Found Token T_ID [ " + currentToken + " ] " + " at index " + currentTokenIndex +  "\n";
+                            if (lastTokenTypeFound != "ID") {
+                                lastTokenIndex = currentTokenIndex;
+                            }
                             tokenFound = true;
-                            currentToken = "";
+                            //currentToken = "";
+                            //lastToken = lastToken + currentToken;
                             lastTokenTypeFound = "ID";
                         }
                         else {
                             // Not id, check for symbol
                             for (var regex in Symbols) {
-                                if (Symbols[regex].test(currentToken)) {
-                                    lastTokenIndex = currentTokenIndex;
+                                if (Symbols[regex].test(currentChar)) {
+                                    //lastTokenIndex = currentTokenIndex;
+                                    // If found symbol, print all last IDs
+                                    if (lastTokenTypeFound == "ID") {
+                                        while (lastTokenIndex < currentTokenIndex) {
+                                            lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at index " + lastTokenIndex + "\n";
+                                            lastTokenIndex++;
+                                        }
+                                    }
                                     // Check for == case
                                     if (Symbols[regex] == Symbols['T_ASSIGNMENT_OP']) {
+                                        var lastChar = currentChar;
+                                        lastTokenIndex = currentTokenIndex;
                                         currentTokenIndex++;
-                                        currentChar = tokens.charAt(currentTokenIndex);
-                                        var lastToken = currentToken;
-                                        currentToken = currentToken + currentChar;
+                                        currentToken = currentChar + tokens.charAt(currentTokenIndex);
                                         if (Symbols['T_EQUALS'].test(currentToken)) {
                                             lextext += "Found Token T_EQUALS [ " + currentToken + " ] " + " at index " + lastTokenIndex + "\n";
                                             lastTokenIndex = currentTokenIndex;
@@ -94,7 +101,7 @@ var TSC;
                                         }
                                     }
                                     if (!tokenFound) {
-                                        lextext += "Found Token " + regex + " [ " + currentToken + " ] " + " at index " + currentTokenIndex + "\n";
+                                        lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
                                         lastTokenIndex = currentTokenIndex;
                                         tokenFound = true;
                                         currentToken = "";
@@ -104,12 +111,25 @@ var TSC;
                             }
                             if (!tokenFound) {
                                 // Not symbol, check digit
-                                if (T_DIGIT.test(currentToken)) {
-                                    lextext += "Found Token T_DIGIT [ " + currentToken + " ] " + " at index " + currentTokenIndex + "\n";
+                                if (T_DIGIT.test(currentChar)) {
+                                    lextext += "Found Token T_DIGIT [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
                                     lastTokenIndex = currentTokenIndex;
                                     tokenFound = true;
                                     currentToken = "";
                                     lastTokenTypeFound = "Digit";
+                                }
+                                else {
+                                    // check for !=
+                                    currentToken = currentChar + tokens.charAt(currentTokenIndex + 1);
+                                    if (Symbols['T_NOT_EQUAL'].test(currentToken)) {
+                                        lextext += "Found Token T_NOT_EQUAL [ " + currentToken + " ] " + " at index " + currentTokenIndex + "\n";
+                                        lastTokenIndex = currentTokenIndex;
+                                        currentTokenIndex++;
+                                        tokenFound = true;
+                                        currentToken = "";
+                                        lastTokenTypeFound = "Symbol";
+                                    }
+                                    currentToken = lastToken;
                                 }
                             }
                         }
