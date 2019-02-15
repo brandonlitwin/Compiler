@@ -16,4 +16,3 @@ var _Lexer = TSC.Lexer;
     var morePrograms = true;
     var errorText = "";
     var warningText = "";
-    var currentSearchString = "";
