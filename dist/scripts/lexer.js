@@ -41,7 +41,7 @@ var TSC;
                 // 4. Digit
                 // 5. Char
                 /*
-                Lexer TODO: Have lexer fix a missing $. Ignore Comments. Option to switch on verbose mode.
+                Lexer TODO: Ignore Comments. Option to switch on verbose mode.
                 */
                 var lextext = "Lexing program 1...\n";
                 for (currentTokenIndex; currentTokenIndex < tokens.length; currentTokenIndex++) {
@@ -202,19 +202,21 @@ var TSC;
                                         lastTokenTypeFound = "Symbol";
                                     }
                                     else {
-                                        //currentToken = lastToken;
-                                        if (!lexErrorFound)
+                                        if (!lexErrorFound) {
                                             lextext += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
-                                        lexErrorFound = true;
-                                        lexErrorCount++;
-                                        errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                            lexErrorFound = true;
+                                            lexErrorCount++;
+                                            lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                            errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                        }
                                         if (currentTokenIndex < tokens.length - 1) {
                                             morePrograms = true;
                                         }
                                         else {
                                             morePrograms = false;
                                         }
-                                        lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                        //if (!lexErrorFound)
+                                        //lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
                                     }
                                 }
                             }

@@ -52,11 +52,14 @@
 
 			console.log(morePrograms);
 			putMessage(_Lexer.lex());
+				if (warningText != "")
+					putMessage(warningText);
 				if (errorText != "")
 					putMessage(errorText);
-				else if (warningText != "")
-					putMessage(warningText);
+				else 
 					putMessage("Compilation finished with no errors!\n");
+				
+				
 				
 	    }
     
