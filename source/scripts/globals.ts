@@ -15,3 +15,4 @@ var _Lexer = TSC.Lexer;
     var programCount = 1;
     var morePrograms = true;
     var errorText = "";
+    var currentSearchString = "";
