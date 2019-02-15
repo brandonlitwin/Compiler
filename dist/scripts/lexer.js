@@ -1,4 +1,8 @@
-/* lexer.ts  */
+/* lexer.ts
+Brandon Litwin
+CMPT 432 - Compilers
+Project 1
+*/
 var TSC;
 (function (TSC) {
     var Lexer = /** @class */ (function () {

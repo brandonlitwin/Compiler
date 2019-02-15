@@ -1,3 +1,7 @@
+/*
+Brandon Litwin
+CMPT 432 - Compilers
+*/
 var _Lexer = TSC.Lexer;
 // Global variables
 var tokens = "";
