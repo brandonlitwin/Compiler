@@ -24,6 +24,8 @@ CMPT 432 - Compilers
 			<textarea id="taSourceCode" class="codemirror-textarea"></textarea><br>
 			<div style="text-align:left;">
 				<input type="button" id="btnCompile" value="Compile" onclick="btnCompile_click();"/>
+				<input type="checkbox" id="verboseCheck" value="Verbose Mode" onclick="verboseModeSet()"/>
+				Verbose Mode
 			</div> 
 			<h2>Output</h2>
             <textarea id="taOutput"></textarea>
@@ -39,28 +41,38 @@ CMPT 432 - Compilers
 	        tokens = "";
 	        tokenIndex = 0;
 	        currentToken = ' ';
-	        errorCount = 0;        
-	    }
+			errorCount = 0;    
+			verboseOn = false;    
+		}
+		
+		function verboseModeSet() {
+			var checkBox = document.getElementById("verboseCheck");
+			if (checkBox.checked == true)
+				verboseOn = true;
+			else
+				verboseOn = false;
+		}
     
 	    function btnCompile_click() {        
 	        // This is executed as a result of the user pressing the 
 	        // "compile" button between the two text areas, above.  
-	        init();
+	        //init();
 			putMessage("Compilation Started");
 			var code = document.getElementById("taSourceCode");
     		var editor = CodeMirror.fromTextArea(code, {
         		lineNumbers: true
 			});
 			tokens = editor.getValue();
-
-			console.log(morePrograms);
-			putMessage(_Lexer.lex());
-				if (warningText != "")
-					putMessage(warningText);
-				if (errorText != "")
-					putMessage(errorText);
-				else 
-					putMessage("Compilation finished with no errors!\n");	
+			if (verboseOn)
+				putMessage(_Lexer.lex());
+			else
+				_Lexer.lex()
+			if (warningText != "")
+				putMessage(warningText);
+			if (errorText != "")
+				putMessage(errorText);
+			else 
+				putMessage("Compilation finished with no errors!\n");	
 				
 	    }
     

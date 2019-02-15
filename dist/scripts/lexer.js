@@ -44,9 +44,6 @@ var TSC;
                 // 3. Symbol
                 // 4. Digit
                 // 5. Char
-                /*
-                Lexer TODO: Option to switch on verbose mode.
-                */
                 var lextext = "Lexing program 1...\n";
                 for (currentTokenIndex; currentTokenIndex < tokens.length; currentTokenIndex++) {
                     var tokenFound = false;
@@ -203,9 +200,16 @@ var TSC;
                                                     lexErrorCount++;
                                                     lexErrorFound = true;
                                                     EOPFound = true;
-                                                    lextext += "Error: Missing End Comment [*/] for Comment beginning on line " + startCommentIndex + "\n";
-                                                    lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
-                                                    errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                                    if (verboseOn) {
+                                                        lextext += "Error: Missing End Comment [*/] for Comment beginning on line " + startCommentIndex + "\n";
+                                                        lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                                        errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                                    }
+                                                    else {
+                                                        errorText += "Error: Missing End Comment [*/] for Comment beginning on line " + startCommentIndex + "\n";
+                                                        errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                                        errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                                    }
                                                 }
                                                 else
                                                     currentTokenIndex++;
@@ -214,9 +218,16 @@ var TSC;
                                             if (currentTokenIndex == tokens.length - 1) {
                                                 lexErrorCount++;
                                                 lexErrorFound = true;
-                                                lextext += "Error: Missing End Comment [*/] for Comment beginning on line " + startCommentIndex + "\n";
-                                                lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
-                                                errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                                if (verboseOn) {
+                                                    lextext += "Error: Missing End Comment [*/] for Comment beginning on line " + startCommentIndex + "\n";
+                                                    lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                                    errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                                }
+                                                else {
+                                                    errorText += "Error: Missing End Comment [*/] for Comment beginning on line " + startCommentIndex + "\n";
+                                                    errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                                    errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                                }
                                             }
                                         }
                                         currentToken = currentChar + tokens.charAt(currentTokenIndex);
@@ -226,11 +237,18 @@ var TSC;
                                         else {
                                             // No other errors and no valid tokens found yet. This must be an invalid token.
                                             if (!lexErrorFound) {
-                                                lextext += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
                                                 lexErrorFound = true;
                                                 lexErrorCount++;
-                                                lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
-                                                errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                                if (verboseOn) {
+                                                    lextext += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                                    lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                                    errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                                }
+                                                else {
+                                                    errorText += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                                    errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                                    errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                                }
                                             }
                                         }
                                     }
