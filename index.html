@@ -54,6 +54,9 @@
 			putMessage(_Lexer.lex());
 				if (errorText != "")
 					putMessage(errorText);
+				else if (warningText != "")
+					putMessage(warningText);
+					putMessage("Compilation finished with no errors!\n");
 				
 	    }
     

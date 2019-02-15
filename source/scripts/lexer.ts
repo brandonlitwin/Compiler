@@ -49,33 +49,39 @@ module TSC
 				for (currentTokenIndex; currentTokenIndex < tokens.length; currentTokenIndex++) {
 					var tokenFound = false;
 					var currentChar = tokens.charAt(currentTokenIndex);
-					
+					// Warning if EOF not found at last token
+					if ((currentTokenIndex == tokens.length-1) && currentChar != '$') {
+						tokens += "$";
+						warningText += "Warning: No EOP Token ($) Found in program " + programCount + ". Added to the end of program.\n";
+					}
+					console.log(currentToken);
+					console.log(morePrograms);
 					currentToken = currentToken + currentChar;
 					currentToken = currentToken.trim();
-					console.log("Current Token" + currentToken);
+					//console.log("Current Token" + currentToken);
 					// Check for keyword
 					for (var regex in Keywords) {
 						if (Keywords[regex].test(currentToken)) {
-							console.log("Found keyword " + currentToken);
+							//console.log("Found keyword " + currentToken);
 							var keywordStart = currentToken.search(Keywords[regex]) + lastTokenIndex;
 							var keywordStartFromCurrent = keywordStart - lastTokenIndex;
-							console.log(Keywords[regex]);
-							console.log(currentToken);
+							//console.log(Keywords[regex]);
+							//console.log(currentToken);
 							// If found keyword, print all last IDs
-							console.log(lastTokenTypeFound);
-							console.log(lastTokenIndex);
-							console.log(keywordStart);
+							//console.log(lastTokenTypeFound);
+							//console.log(lastTokenIndex);
+							//console.log(keywordStart);
 							if (lastTokenTypeFound == "ID") {
 								while (lastTokenIndex < keywordStart) {
-									console.log(lastTokenIndex);
-									console.log(tokens.charAt(lastTokenIndex));
+									//console.log(lastTokenIndex);
+									//console.log(tokens.charAt(lastTokenIndex));
 									if (!lexErrorFound)
 										lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at index " + lastTokenIndex +  "\n";
 									lastTokenIndex++;
 								}
-								console.log("current token is before " + currentToken);
+								//console.log("current token is before " + currentToken);
 								currentToken = currentToken.substring(keywordStartFromCurrent);
-								console.log("current token is now " + currentToken);
+								//console.log("current token is now " + currentToken);
 							}
 							if (!lexErrorFound)
 								lextext += "Found Token " + regex + " [ " + currentToken + " ] " + " at index " + keywordStart +  "\n";
@@ -102,14 +108,14 @@ module TSC
 									// If found symbol, print all last IDs
 									if (lastTokenTypeFound == "ID") {
 										var keywordFound = false;
-										console.log("last index is " + lastTokenIndex);
+										//console.log("last index is " + lastTokenIndex);
 										while (lastTokenIndex < currentTokenIndex) {
-											console.log("last index in here is " + lastTokenIndex);
+											//console.log("last index in here is " + lastTokenIndex);
 											// Check if the current list of ids contains a keyword
 											var currentTokens = tokens.substring(lastTokenIndex, currentTokenIndex);
 											for (var K_regex in Keywords) {
 												if (Keywords[K_regex].test(currentTokens) && !lexErrorFound) {
-													console.log("Found keyword " + currentTokens);
+													//console.log("Found keyword " + currentTokens);
 													lextext += "Found Token " + K_regex + " [ " + currentTokens + " ] " + " at index " + lastTokenIndex +  "\n";
 													keywordFound = true;
 												}
@@ -141,7 +147,7 @@ module TSC
 									}
 									if (!tokenFound) {
 										if (!lexErrorFound)
-										console.log("the regex is " + regex);
+										//console.log("the regex is " + regex);
 											lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex +  "\n";
 										lastTokenIndex = currentTokenIndex;
 										tokenFound = true;
@@ -204,7 +210,7 @@ module TSC
 											lextext += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
 										lexErrorFound = true;
 										lexErrorCount++;
-										errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!";
+										errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
 										if (currentTokenIndex < tokens.length - 1) {
 											morePrograms = true;
 										} else {
@@ -220,6 +226,7 @@ module TSC
 					}	
 									
 				}
+				console.log(lextext);
 				return lextext;	
 			}
 				
