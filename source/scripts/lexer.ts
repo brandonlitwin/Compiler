@@ -49,7 +49,7 @@ module TSC
 				for (currentTokenIndex; currentTokenIndex < tokens.length; currentTokenIndex++) {
 					var tokenFound = false;
 					var currentChar = tokens.charAt(currentTokenIndex);
-					// Warning if EOF not found at last token
+					// Warning if EOP not found at last token
 					if ((currentTokenIndex == tokens.length-1) && currentChar != '$') {
 						tokens += "$";
 						warningText += "Warning: No EOP Token [$] Found in program " + programCount + ". Added to the end of program.\n";
@@ -59,6 +59,7 @@ module TSC
 					// Check for keyword
 					for (var regex in Keywords) {
 						if (Keywords[regex].test(currentToken)) {
+							// Separate the keyword from the rest of the token being reviewed
 							var keywordStart = currentToken.search(Keywords[regex]) + lastTokenIndex;
 							var keywordStartFromCurrent = keywordStart - lastTokenIndex;
 							// If found keyword, print all last IDs
@@ -95,7 +96,7 @@ module TSC
 									if (lastTokenTypeFound == "ID") {
 										var keywordFound = false;
 										while (lastTokenIndex < currentTokenIndex) {
-											// Check if the current list of ids contains a keyword
+											// Check if the current list of IDs contains a keyword
 											var currentTokens = tokens.substring(lastTokenIndex, currentTokenIndex);
 											for (var K_regex in Keywords) {
 												if (Keywords[K_regex].test(currentTokens) && !lexErrorFound) {
@@ -126,6 +127,7 @@ module TSC
 											currentTokenIndex = lastTokenIndex;
 										}
 									}
+									// Now print the symbol
 									if (!tokenFound) {
 										if (!lexErrorFound)
 											lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex +  "\n";
@@ -134,6 +136,7 @@ module TSC
 										currentToken = "";
 										lastTokenTypeFound = "Symbol";
 									}
+									// If EOP is found, assume program is finished
 									if (Symbols[regex] == Symbols['T_EOP']) {
 										lextext += "Finished program " + programCount + "\n";
 										lexErrorFound = false;
@@ -145,7 +148,7 @@ module TSC
 								} 
 							}
 							if (!tokenFound) {
-								// Not symbol, check digit
+								// Not a symbol, check if it's a digit
 								if (T_DIGIT.test(currentChar)) {
 									//If found keyword, print all last IDs
 									if (lastTokenTypeFound == "ID") {
@@ -166,6 +169,7 @@ module TSC
 										}
 										
 									}
+									// Now print the digit
 									if (!lexErrorFound)
 										lextext += "Found Token T_DIGIT [ " + currentChar + " ] " + " at index " + currentTokenIndex +  "\n";
 									lastTokenIndex = currentTokenIndex;
@@ -204,6 +208,7 @@ module TSC
 												} else
 													currentTokenIndex++;
 											}
+											// In case there is no EOP token
 											if (currentTokenIndex == tokens.length-1) {
 												lexErrorCount++;
 												lexErrorFound = true;
@@ -216,6 +221,7 @@ module TSC
 										if (Symbols['T_END_COMMENT'].test(currentToken)) {
 											currentToken = "";
 										} else {
+											// No other errors and no valid tokens found yet. This must be an invalid token.
 											if (!lexErrorFound) {
 												lextext += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
 												lexErrorFound = true;
