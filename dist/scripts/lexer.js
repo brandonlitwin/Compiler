@@ -257,6 +257,8 @@ var TSC;
                         }
                     }
                 }
+                console.log(verboseOn);
+                console.log(lextext);
                 return lextext;
             }
         };

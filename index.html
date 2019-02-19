@@ -24,7 +24,7 @@ CMPT 432 - Compilers
 			<textarea id="taSourceCode" class="codemirror-textarea"></textarea><br>
 			<div style="text-align:left;">
 				<input type="button" id="btnCompile" value="Compile" onclick="btnCompile_click();"/>
-				<input type="checkbox" id="verboseCheck" value="Verbose Mode" onclick="verboseModeSet()"/>
+				<input type="checkbox" id="verboseCheck" value="Verbose Mode" onclick="verboseModeSet()" checked/>
 				Verbose Mode
 			</div> 
 			<h2>Output</h2>
@@ -42,7 +42,7 @@ CMPT 432 - Compilers
 	        tokenIndex = 0;
 	        currentToken = ' ';
 			errorCount = 0;    
-			verboseOn = false;    
+			verboseOn = true;    
 		}
 		
 		function verboseModeSet() {

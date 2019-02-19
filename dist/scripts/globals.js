@@ -19,4 +19,4 @@ var programCount = 1;
 var morePrograms = true;
 var errorText = "";
 var warningText = "";
-var verboseOn = false;
+var verboseOn = true;
