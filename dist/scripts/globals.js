@@ -22,3 +22,4 @@ var warningText = "";
 var verboseOn = true;
 var inString = false;
 var startStringIndex = 0;
+var EOPFound = false;

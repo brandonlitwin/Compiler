@@ -64,38 +64,26 @@ var TSC;
                         currentTokenIndex++;
                         currentChar = tokens.charAt(currentTokenIndex);
                         // Check for unterminated string
-                        while (!Symbols['T_QUOTE'].test(currentChar) && currentTokenIndex < tokens.length - 1 && !EOPFound) {
+                        //var EOPFoundInString = false;
+                        while (!Symbols['T_QUOTE'].test(currentChar) && currentTokenIndex < tokens.length - 1) {
                             currentChar = tokens.charAt(currentTokenIndex);
                             // If EOP found before another quote, throw an error
-                            if (Symbols['T_EOP'].test(currentChar)) {
-                                lexErrorCount++;
-                                lexErrorFound = true;
-                                EOPFound = true;
-                                if (verboseOn) {
-                                    lextext += "Error: Unterminated String beginning on index " + startStringIndex + "\n";
-                                    lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
-                                    errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
-                                }
-                                else {
-                                    errorText += "Error: Unterminated String beginning on index " + startStringIndex + "\n";
-                                    errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
-                                    errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
-                                }
-                            }
-                            else
-                                currentTokenIndex++;
+                            /*if (Symbols['T_EOP'].test(currentChar)) {
+                                EOPFoundInString = true;
+                            }*/
+                            currentTokenIndex++;
                         }
                         // In case there is no EOP token
-                        if (!Symbols['T_QUOTE'].test(currentChar) && !EOPFound) {
+                        if (!Symbols['T_QUOTE'].test(currentChar)) {
                             lexErrorCount++;
                             lexErrorFound = true;
                             if (verboseOn) {
-                                lextext += "Error: Unterminated String beginning on line " + startStringIndex + "\n";
+                                lextext += "Error: Unterminated String beginning on index " + startStringIndex + "\n";
                                 lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
                                 errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
                             }
                             else {
-                                errorText += "Error: Unterminated String beginning on line " + startStringIndex + "\n";
+                                errorText += "Error: Unterminated String beginning on index " + startStringIndex + "\n";
                                 errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
                                 errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
                             }
@@ -103,8 +91,10 @@ var TSC;
                         else {
                             // Found an end quote so there is no error
                             currentTokenIndex = startStringIndex + 1;
-                            currentToken = "";
+                            //currentToken = "";
                             currentChar = tokens.charAt(currentTokenIndex);
+                            currentToken = currentChar;
+                            //inString = false;
                         }
                     }
                     else if ((Symbols['T_QUOTE'].test(currentToken) && inString)) {
@@ -140,9 +130,30 @@ var TSC;
                                 lastTokenIndex = currentTokenIndex;
                             }
                             tokenFound = true;
-                            lastTokenTypeFound = "ID";
+                            if (inString) {
+                                lastTokenTypeFound = "Char";
+                                if (!lexErrorFound)
+                                    lextext += "Found Token T_Char [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                            }
+                            else
+                                lastTokenTypeFound = "ID";
                         }
                         else {
+                            // If in string and not an ID, space, or quote, found an invalid char
+                            if (inString && !Symbols['T_SPACE'].test(currentChar) && !Symbols['T_QUOTE'].test(currentChar) && !lexErrorFound) {
+                                lexErrorCount++;
+                                lexErrorFound = true;
+                                if (verboseOn) {
+                                    lextext += "Found Invalid Character in String [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                    lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                    errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                }
+                                else {
+                                    errorText += "Found Invalid Character in String [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                    errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                    errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                }
+                            }
                             // Not id, check for symbol
                             for (var regex in Symbols) {
                                 if (Symbols[regex].test(currentChar)) {
@@ -183,20 +194,56 @@ var TSC;
                                     }
                                     // Now print the symbol
                                     if (!tokenFound) {
-                                        if (!lexErrorFound)
-                                            lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
-                                        lastTokenIndex = currentTokenIndex;
-                                        tokenFound = true;
-                                        currentToken = "";
-                                        lastTokenTypeFound = "Symbol";
+                                        // Symbols inside strings are invalid, except spaces and quotes
+                                        if (Symbols['T_QUOTE'].test(currentChar) && inString) {
+                                            inString = false;
+                                            lastTokenIndex = currentTokenIndex;
+                                            tokenFound = true;
+                                            currentToken = "";
+                                            lastTokenTypeFound = "Symbol";
+                                            if (!lexErrorFound)
+                                                lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                        }
+                                        // Found multiline space inside string, which isn't allowed.
+                                        else if (Symbols['T_MULTILINE_SPACE'].test(currentChar) && inString && !lexErrorFound) {
+                                            lexErrorCount++;
+                                            lexErrorFound = true;
+                                            if (verboseOn) {
+                                                lextext += "Found Multiline Space in String at index " + currentTokenIndex + "\n";
+                                                lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                                errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                            }
+                                            else {
+                                                errorText += "Found Multiline Space in String at index " + currentTokenIndex + "\n";
+                                                errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                                errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                            }
+                                        }
+                                        else {
+                                            // If none of the above, must be valid symbol outside string
+                                            if (!Symbols['T_SPACE'].test(currentChar) && !inString && !lexErrorFound)
+                                                lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                            else if (inString && !lexErrorFound) {
+                                                lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                            }
+                                            lastTokenIndex = currentTokenIndex;
+                                            tokenFound = true;
+                                            currentToken = "";
+                                            lastTokenTypeFound = "Symbol";
+                                        }
                                     }
                                     // If EOP is found, assume program is finished
-                                    if (Symbols[regex] == Symbols['T_EOP']) {
-                                        lextext += "Finished program " + programCount + "\n";
+                                    if (Symbols[regex] == Symbols['T_EOP'] && !inString) {
+                                        console.log("found EOP");
+                                        if (!lexErrorFound)
+                                            lextext += "Finished program " + programCount + "\n";
                                         lexErrorFound = false;
-                                        programCount++;
-                                        if (currentTokenIndex < tokens.length - 1)
+                                        inString = false;
+                                        if (!EOPFound)
+                                            programCount++;
+                                        if (currentTokenIndex < tokens.length - 1) {
                                             lextext += "Lexing program " + programCount + "...\n";
+                                        }
                                     }
                                 }
                             }
@@ -247,7 +294,6 @@ var TSC;
                                         if (Symbols['T_BEGIN_COMMENT'].test(currentToken)) {
                                             // If you find the start comment token, keep looking for the end comment token
                                             var startCommentIndex = currentTokenIndex;
-                                            var EOPFound = false;
                                             while (!Symbols['T_END_COMMENT'].test(currentToken) && currentTokenIndex < tokens.length - 1 && !EOPFound) {
                                                 currentChar = tokens.charAt(currentTokenIndex);
                                                 currentToken = currentChar + tokens.charAt(currentTokenIndex + 1);
@@ -256,12 +302,12 @@ var TSC;
                                                     lexErrorFound = true;
                                                     EOPFound = true;
                                                     if (verboseOn) {
-                                                        lextext += "Error: Missing End Comment [*/] for Comment beginning on line " + startCommentIndex + "\n";
+                                                        lextext += "Error: Missing End Comment [*/] for Comment beginning on index " + startCommentIndex + "\n";
                                                         lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
                                                         errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
                                                     }
                                                     else {
-                                                        errorText += "Error: Missing End Comment [*/] for Comment beginning on line " + startCommentIndex + "\n";
+                                                        errorText += "Error: Missing End Comment [*/] for Comment beginning on index " + startCommentIndex + "\n";
                                                         errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
                                                         errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
                                                     }
@@ -312,8 +358,6 @@ var TSC;
                         }
                     }
                 }
-                console.log(verboseOn);
-                console.log(lextext);
                 return lextext;
             }
         };

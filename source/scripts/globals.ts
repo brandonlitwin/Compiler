@@ -23,3 +23,4 @@ var _Lexer = TSC.Lexer;
     var verboseOn = true;
     var inString = false;
     var startStringIndex = 0;
+    var EOPFound = false;
