@@ -21,3 +21,5 @@ var _Lexer = TSC.Lexer;
     var errorText = "";
     var warningText = "";
     var verboseOn = true;
+    var inString = false;
+    var startStringIndex = 0;

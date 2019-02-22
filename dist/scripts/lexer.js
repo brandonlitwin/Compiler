@@ -25,6 +25,7 @@ var TSC;
                     T_L_BRACE: new RegExp('{'),
                     T_R_BRACE: new RegExp('}'),
                     T_EOP: new RegExp('\\$'),
+                    T_MULTILINE_SPACE: new RegExp('\\n'),
                     T_SPACE: new RegExp('\\s'),
                     T_ADDITION_OP: new RegExp('\\+'),
                     T_L_PAREN: new RegExp('\\('),
@@ -55,6 +56,60 @@ var TSC;
                     }
                     currentToken = currentToken + currentChar;
                     currentToken = currentToken.trim();
+                    // First, check for quote because a string of chars must be treated differently
+                    if (Symbols['T_QUOTE'].test(currentChar) && !inString && !lexErrorFound) {
+                        inString = true;
+                        startStringIndex = currentTokenIndex;
+                        lextext += "Found Token T_QUOTE [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                        currentTokenIndex++;
+                        currentChar = tokens.charAt(currentTokenIndex);
+                        // Check for unterminated string
+                        while (!Symbols['T_QUOTE'].test(currentChar) && currentTokenIndex < tokens.length - 1 && !EOPFound) {
+                            currentChar = tokens.charAt(currentTokenIndex);
+                            // If EOP found before another quote, throw an error
+                            if (Symbols['T_EOP'].test(currentChar)) {
+                                lexErrorCount++;
+                                lexErrorFound = true;
+                                EOPFound = true;
+                                if (verboseOn) {
+                                    lextext += "Error: Unterminated String beginning on index " + startStringIndex + "\n";
+                                    lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                    errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                }
+                                else {
+                                    errorText += "Error: Unterminated String beginning on index " + startStringIndex + "\n";
+                                    errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                    errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                                }
+                            }
+                            else
+                                currentTokenIndex++;
+                        }
+                        // In case there is no EOP token
+                        if (!Symbols['T_QUOTE'].test(currentChar) && !EOPFound) {
+                            lexErrorCount++;
+                            lexErrorFound = true;
+                            if (verboseOn) {
+                                lextext += "Error: Unterminated String beginning on line " + startStringIndex + "\n";
+                                lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                            }
+                            else {
+                                errorText += "Error: Unterminated String beginning on line " + startStringIndex + "\n";
+                                errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+                                errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+                            }
+                        }
+                        else {
+                            // Found an end quote so there is no error
+                            currentTokenIndex = startStringIndex + 1;
+                            currentToken = "";
+                            currentChar = tokens.charAt(currentTokenIndex);
+                        }
+                    }
+                    else if ((Symbols['T_QUOTE'].test(currentToken) && inString)) {
+                        inString = false;
+                    }
                     // Check for keyword
                     for (var regex in Keywords) {
                         if (Keywords[regex].test(currentToken)) {
