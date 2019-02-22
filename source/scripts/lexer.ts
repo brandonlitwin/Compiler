@@ -68,7 +68,6 @@ module TSC
 						// Check for unterminated string
                         while (!Symbols['T_QUOTE'].test(currentChar) && currentTokenIndex < tokens.length) {
 							currentChar = tokens.charAt(currentTokenIndex);
-							console.log(currentChar);
                             currentTokenIndex++;
 						}
 						
@@ -137,8 +136,10 @@ module TSC
                             else
 								lastTokenTypeFound = "ID";
 						} else {
-							// If in string and not an ID, space, or quote, found an invalid char
-							if (inString && !Symbols['T_SPACE'].test(currentChar) && !Symbols['T_QUOTE'].test(currentChar) && !lexErrorFound) {
+							// If in string and not an ID, space, quote, or comment, found an invalid char
+							currentToken = currentChar + tokens.charAt(currentTokenIndex+1);
+							if (inString && !Symbols['T_SPACE'].test(currentChar) && !Symbols['T_QUOTE'].test(currentChar) 
+							&& !lexErrorFound && !Symbols['T_BEGIN_COMMENT'].test(currentToken) && !Symbols['T_END_COMMENT'].test(currentToken)) {
 								lexErrorCount++;
 								lexErrorFound = true;
 								if (verboseOn) {
@@ -232,7 +233,6 @@ module TSC
 									} 
 									// If EOP is found, assume program is finished
 									if (Symbols[regex] == Symbols['T_EOP'] && !inString) {
-										console.log("found EOP");
 										if (!lexErrorFound)
 											lextext += "Finished program " + programCount + "\n";
 										lexErrorFound = false;
