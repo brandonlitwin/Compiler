@@ -66,13 +66,9 @@ module TSC
 						currentTokenIndex++;
 						currentChar = tokens.charAt(currentTokenIndex);
 						// Check for unterminated string
-						//var EOPFoundInString = false;
-                        while (!Symbols['T_QUOTE'].test(currentChar) && currentTokenIndex < tokens.length-1) {
+                        while (!Symbols['T_QUOTE'].test(currentChar) && currentTokenIndex < tokens.length) {
 							currentChar = tokens.charAt(currentTokenIndex);
-							// If EOP found before another quote, throw an error
-							/*if (Symbols['T_EOP'].test(currentChar)) {
-								EOPFoundInString = true;
-                            }*/
+							console.log(currentChar);
                             currentTokenIndex++;
 						}
 						
@@ -104,7 +100,7 @@ module TSC
 					}
 					// Check for keyword
 					for (var regex in Keywords) {
-						if (Keywords[regex].test(currentToken)) {
+						if (Keywords[regex].test(currentToken) && !inString) {
 							// Separate the keyword from the rest of the token being reviewed
 							var keywordStart = currentToken.search(Keywords[regex]) + lastTokenIndex;
 							var keywordStartFromCurrent = keywordStart - lastTokenIndex;
