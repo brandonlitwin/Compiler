@@ -61,8 +61,8 @@ module TSC
 					// First, check for quote because a string of chars must be treated differently
 					if (Symbols['T_QUOTE'].test(currentChar) && !inString && !lexErrorFound) {
 						inString = true;
-						startStringIndex = currentTokenIndex;
-						lextext += "Found Token T_QUOTE [ " + currentChar + " ] " + " at index " + currentTokenIndex +  "\n";
+						startStringIndex = currentTokenIndex - lastEndLineIndex;
+						lextext += "Found Token T_QUOTE [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) +  "\n";
 						currentTokenIndex++;
 						currentChar = tokens.charAt(currentTokenIndex);
 						// Check for unterminated string
@@ -76,12 +76,12 @@ module TSC
                             lexErrorCount++;
                             lexErrorFound = true;
                             if (verboseOn) {
-                                lextext += "Error: Unterminated String beginning on index " + startStringIndex + "\n";
+                                lextext += "Error: Unterminated String beginning on line " + lineNumber + " index " + startStringIndex + "\n";
                                 lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
                                 errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
                             }
                             else {
-                                errorText += "Error: Unterminated String beginning on index " + startStringIndex + "\n";
+                                errorText += "Error: Unterminated String beginning on line " + lineNumber + " index " + startStringIndex + "\n";
                                 errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
                                 errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
 							}
@@ -107,13 +107,13 @@ module TSC
 							if (lastTokenTypeFound == "ID") {
 								while (lastTokenIndex < keywordStart) {
 									if (!lexErrorFound)
-										lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at index " + lastTokenIndex +  "\n";
+										lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) +  "\n";
 									lastTokenIndex++;
 								}
 								currentToken = currentToken.substring(keywordStartFromCurrent);
 							}
 							if (!lexErrorFound)
-								lextext += "Found Token " + regex + " [ " + currentToken + " ] " + " at index " + keywordStart +  "\n";
+								lextext += "Found Token " + regex + " [ " + currentToken + " ] " + " at line " + lineNumber + " index " + (keywordStart - lastEndLineIndex) +  "\n";
 							lastTokenIndex = keywordStart - 1;
 							tokenFound = true;
 							currentToken = "";
@@ -131,7 +131,7 @@ module TSC
 							if (inString) {
                                 lastTokenTypeFound = "Char";
                                 if (!lexErrorFound)
-                                    lextext += "Found Token T_Char [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+                                    lextext += "Found Token T_Char [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
                             }
                             else
 								lastTokenTypeFound = "ID";
@@ -143,12 +143,12 @@ module TSC
 								lexErrorCount++;
 								lexErrorFound = true;
 								if (verboseOn) {
-									lextext += "Found Invalid Character in String [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+									lextext += "Found Invalid Character in String [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
 									lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
 									errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
 								}
 								else {
-									errorText += "Found Invalid Character in String [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+									errorText += "Found Invalid Character in String [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
 									errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
 									errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
 								}
@@ -164,12 +164,12 @@ module TSC
 											var currentTokens = tokens.substring(lastTokenIndex, currentTokenIndex);
 											for (var K_regex in Keywords) {
 												if (Keywords[K_regex].test(currentTokens) && !lexErrorFound) {
-													lextext += "Found Token " + K_regex + " [ " + currentTokens + " ] " + " at index " + lastTokenIndex +  "\n";
+													lextext += "Found Token " + K_regex + " [ " + currentTokens + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) +  "\n";
 													keywordFound = true;
 												}
 											}
 											if (!lexErrorFound && !keywordFound) {
-												lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at index " + lastTokenIndex +  "\n";
+												lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) +  "\n";
 											}
 											lastTokenIndex++;
 										}
@@ -182,7 +182,7 @@ module TSC
 										currentToken = currentChar + tokens.charAt(currentTokenIndex);
 										if (Symbols['T_EQUALS'].test(currentToken)) {
 											if (!lexErrorFound)
-												lextext += "Found Token T_EQUALS [ " + currentToken + " ] " + " at index " + lastTokenIndex +  "\n";
+												lextext += "Found Token T_EQUALS [ " + currentToken + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) +  "\n";
 											lastTokenIndex = currentTokenIndex;
 											tokenFound = true;
 											currentToken = "";
@@ -201,29 +201,40 @@ module TSC
 											currentToken = "";
 											lastTokenTypeFound = "Symbol";
 											if (!lexErrorFound)
-												lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+												lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
 										 } 
-										 // Found multiline space inside string, which isn't allowed.
-										 else if (Symbols['T_MULTILINE_SPACE'].test(currentChar) && inString && !lexErrorFound) {
-											lexErrorCount++;
-										  	lexErrorFound = true;
-										  	if (verboseOn) {
-											  	lextext += "Found Multiline Space in String at index " + currentTokenIndex + "\n";
-											  	lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
-											  	errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
-										  	}
-										  	else {
-											  	errorText += "Found Multiline Space in String at index " + currentTokenIndex + "\n";
-											  	errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
-											  	errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
-										  	}
+										 else if (Symbols['T_MULTILINE_SPACE'].test(currentChar) && !lexErrorFound) {
+											// Found multiline space inside string, which isn't allowed.
+											if (inString) {
+												lexErrorCount++;
+										  		lexErrorFound = true;
+										  		if (verboseOn) {
+											  		lextext += "Found Multiline Space in String at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
+											  		lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+											  		errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+										  		}
+										  		else {
+											  		errorText += "Found Multiline Space in String at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
+											  		errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
+											  		errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
+										  		}
+											} else {
+												// If it's a multiline space outside a string, increase line number
+												lastTokenIndex = currentTokenIndex;
+											    tokenFound = true;
+											    currentToken = "";
+											    lastTokenTypeFound = "Symbol";
+												lineNumber++;
+												lastEndLineIndex = currentTokenIndex + 1;
+											}
+											
 										 }									  
 										 else {
 											// If none of the above, must be valid symbol outside string
 											if (!Symbols['T_SPACE'].test(currentChar) && !inString && !lexErrorFound)
-												lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+												lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
 											else if (inString && !lexErrorFound) {
-												lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+												lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
 											}
 											lastTokenIndex = currentTokenIndex;
 											tokenFound = true;
@@ -257,12 +268,12 @@ module TSC
 											var currentTokens = tokens.substring(lastTokenIndex, currentTokenIndex);
 											for (var K_regex in Keywords) {
 												if (Keywords[K_regex].test(currentTokens) && !lexErrorFound) {
-													lextext += "Found Token " + K_regex + " [ " + currentTokens + " ] " + " at index " + lastTokenIndex +  "\n";
+													lextext += "Found Token " + K_regex + " [ " + currentTokens + " ] " + " line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) +  "\n";
 													keywordFound = true;
 												}
 											}
 											if (!lexErrorFound && !keywordFound) {
-												lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at index " + lastTokenIndex +  "\n";
+												lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) +  "\n";
 											}
 											lastTokenIndex++;
 										}
@@ -270,7 +281,7 @@ module TSC
 									}
 									// Now print the digit
 									if (!lexErrorFound)
-										lextext += "Found Token T_DIGIT [ " + currentChar + " ] " + " at index " + currentTokenIndex +  "\n";
+										lextext += "Found Token T_DIGIT [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) +  "\n";
 									lastTokenIndex = currentTokenIndex;
 									tokenFound = true;
 									currentToken = "";
@@ -281,7 +292,7 @@ module TSC
 									currentToken = currentChar + tokens.charAt(currentTokenIndex+1);
 									if (Symbols['T_NOT_EQUAL'].test(currentToken)) {
 										if (!lexErrorFound)
-											lextext += "Found Token T_NOT_EQUAL [ " + currentToken + " ] " + " at index " + currentTokenIndex +  "\n";
+											lextext += "Found Token T_NOT_EQUAL [ " + currentToken + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) +  "\n";
 										lastTokenIndex = currentTokenIndex;
 										currentTokenIndex++;
 										tokenFound = true;
@@ -292,7 +303,7 @@ module TSC
 										currentToken = currentChar + tokens.charAt(currentTokenIndex+1);
 										if (Symbols['T_BEGIN_COMMENT'].test(currentToken)) {
 											// If you find the start comment token, keep looking for the end comment token
-											var startCommentIndex = currentTokenIndex;
+											var startCommentIndex = currentTokenIndex - lastEndLineIndex;
 											while (!Symbols['T_END_COMMENT'].test(currentToken) && currentTokenIndex < tokens.length-1 && !EOPFound) {
 												currentChar = tokens.charAt(currentTokenIndex);
 												currentToken = currentChar + tokens.charAt(currentTokenIndex+1);
@@ -301,12 +312,12 @@ module TSC
 													lexErrorFound = true;
 													EOPFound = true;
 													if (verboseOn) {
-														lextext += "Error: Missing End Comment [*/] for Comment beginning on index " + startCommentIndex + "\n";
+														lextext += "Error: Missing End Comment [*/] for Comment beginning on line " + lineNumber + " index " + startCommentIndex + "\n";
 														lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
 														errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
 													}
 													else {
-														errorText += "Error: Missing End Comment [*/] for Comment beginning on index " + startCommentIndex + "\n";
+														errorText += "Error: Missing End Comment [*/] for Comment beginning on line " + lineNumber + " index " + startCommentIndex + "\n";
 														errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
 														errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
 													}
@@ -318,12 +329,12 @@ module TSC
 												lexErrorCount++;
 												lexErrorFound = true;
 												if (verboseOn) {
-													lextext += "Error: Missing End Comment [*/] for Comment beginning on line " + startCommentIndex + "\n";
+													lextext += "Error: Missing End Comment [*/] for Comment beginning on line " + lineNumber + " index" + startCommentIndex + "\n";
 													lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
 													errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
 												}
 												else {
-													errorText += "Error: Missing End Comment [*/] for Comment beginning on line " + startCommentIndex + "\n";
+													errorText += "Error: Missing End Comment [*/] for Comment beginning on line " + lineNumber + " index" + startCommentIndex + "\n";
 													errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
 													errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
 												}
@@ -338,11 +349,11 @@ module TSC
 												lexErrorFound = true;
 												lexErrorCount++;
 												if (verboseOn) {
-													lextext += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+													lextext += "Invalid Token [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
 													lextext += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
 													errorText = "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
 												} else {
-													errorText += "Invalid Token [ " + currentChar + " ] " + " at index " + currentTokenIndex + "\n";
+													errorText += "Invalid Token [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
 													errorText += "Compilation of program " + programCount + " stopped due to a Lexer error\n";
 													errorText += "Compilation failed! " + lexErrorCount + " Lex errors found!\n";
 												}
