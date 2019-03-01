@@ -26,3 +26,4 @@ var _Lexer = TSC.Lexer;
     var EOPFound = false;
     var lineNumber = 0;
     var lastEndLineIndex = 0;
+    var validLexedTokens = [];

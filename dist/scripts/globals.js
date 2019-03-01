@@ -25,3 +25,4 @@ var startStringIndex = 0;
 var EOPFound = false;
 var lineNumber = 0;
 var lastEndLineIndex = 0;
+var validLexedTokens = [];

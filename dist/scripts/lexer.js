@@ -60,7 +60,9 @@ var TSC;
                     if (Symbols['T_QUOTE'].test(currentChar) && !inString && !lexErrorFound) {
                         inString = true;
                         startStringIndex = currentTokenIndex - lastEndLineIndex;
-                        lextext += "Found Token T_QUOTE [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
+                        lextext += "Found Token T_QUOTE [ " + currentChar + " ] " + " at line " + lineNumber + " index " + startStringIndex + "\n";
+                        var token = new TSC.Token("T_QUOTE", currentToken, lineNumber, (currentTokenIndex - lastEndLineIndex));
+                        validLexedTokens.push(token);
                         currentTokenIndex++;
                         currentChar = tokens.charAt(currentTokenIndex);
                         // Check for unterminated string
@@ -85,7 +87,7 @@ var TSC;
                         }
                         else {
                             // Found an end quote so there is no error
-                            currentTokenIndex = startStringIndex + 1;
+                            currentTokenIndex = startStringIndex + lastEndLineIndex + 1;
                             //currentToken = "";
                             currentChar = tokens.charAt(currentTokenIndex);
                             currentToken = currentChar;
@@ -106,12 +108,17 @@ var TSC;
                                 while (lastTokenIndex < keywordStart) {
                                     if (!lexErrorFound)
                                         lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) + "\n";
+                                    var token = new TSC.Token("T_ID", currentToken, lineNumber, (lastTokenIndex - lastEndLineIndex));
+                                    validLexedTokens.push(token);
                                     lastTokenIndex++;
                                 }
                                 currentToken = currentToken.substring(keywordStartFromCurrent);
                             }
-                            if (!lexErrorFound)
+                            if (!lexErrorFound) {
                                 lextext += "Found Token " + regex + " [ " + currentToken + " ] " + " at line " + lineNumber + " index " + (keywordStart - lastEndLineIndex) + "\n";
+                                var token = new TSC.Token(regex, currentToken, lineNumber, (keywordStart - lastEndLineIndex));
+                                validLexedTokens.push(token);
+                            }
                             lastTokenIndex = keywordStart - 1;
                             tokenFound = true;
                             currentToken = "";
@@ -129,6 +136,8 @@ var TSC;
                                 lastTokenTypeFound = "Char";
                                 if (!lexErrorFound)
                                     lextext += "Found Token T_Char [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
+                                var token = new TSC.Token("T_Char", currentChar, lineNumber, (currentTokenIndex - lastEndLineIndex));
+                                validLexedTokens.push(token);
                             }
                             else
                                 lastTokenTypeFound = "ID";
@@ -163,11 +172,15 @@ var TSC;
                                             for (var K_regex in Keywords) {
                                                 if (Keywords[K_regex].test(currentTokens) && !lexErrorFound) {
                                                     lextext += "Found Token " + K_regex + " [ " + currentTokens + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) + "\n";
+                                                    var token = new TSC.Token(K_regex, currentTokens, lineNumber, (lastTokenIndex - lastEndLineIndex));
+                                                    validLexedTokens.push(token);
                                                     keywordFound = true;
                                                 }
                                             }
                                             if (!lexErrorFound && !keywordFound) {
                                                 lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) + "\n";
+                                                var token = new TSC.Token("T_ID", tokens.charAt(lastTokenIndex), lineNumber, (lastTokenIndex - lastEndLineIndex));
+                                                validLexedTokens.push(token);
                                             }
                                             lastTokenIndex++;
                                         }
@@ -178,8 +191,11 @@ var TSC;
                                         currentTokenIndex++;
                                         currentToken = currentChar + tokens.charAt(currentTokenIndex);
                                         if (Symbols['T_EQUALS'].test(currentToken)) {
-                                            if (!lexErrorFound)
+                                            if (!lexErrorFound) {
                                                 lextext += "Found Token T_EQUALS [ " + currentToken + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) + "\n";
+                                                var token = new TSC.Token(regex, currentToken, lineNumber, (lastTokenIndex - lastEndLineIndex));
+                                                validLexedTokens.push(token);
+                                            }
                                             lastTokenIndex = currentTokenIndex;
                                             tokenFound = true;
                                             currentToken = "";
@@ -198,8 +214,11 @@ var TSC;
                                             tokenFound = true;
                                             currentToken = "";
                                             lastTokenTypeFound = "Symbol";
-                                            if (!lexErrorFound)
+                                            if (!lexErrorFound) {
                                                 lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
+                                                var token = new TSC.Token(regex, currentChar, lineNumber, (currentTokenIndex - lastEndLineIndex));
+                                                validLexedTokens.push(token);
+                                            }
                                         }
                                         else if (Symbols['T_MULTILINE_SPACE'].test(currentChar) && !lexErrorFound) {
                                             // Found multiline space inside string, which isn't allowed.
@@ -234,6 +253,10 @@ var TSC;
                                             else if (inString && !lexErrorFound) {
                                                 lextext += "Found Token " + regex + " [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
                                             }
+                                            if (!Symbols['T_SPACE'].test(currentChar)) {
+                                                var token = new TSC.Token(regex, currentChar, lineNumber, (currentTokenIndex - lastEndLineIndex));
+                                                validLexedTokens.push(token);
+                                            }
                                             lastTokenIndex = currentTokenIndex;
                                             tokenFound = true;
                                             currentToken = "";
@@ -267,17 +290,24 @@ var TSC;
                                                 if (Keywords[K_regex].test(currentTokens) && !lexErrorFound) {
                                                     lextext += "Found Token " + K_regex + " [ " + currentTokens + " ] " + " line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) + "\n";
                                                     keywordFound = true;
+                                                    var token = new TSC.Token(K_regex, currentTokens, lineNumber, (lastTokenIndex - lastEndLineIndex));
+                                                    validLexedTokens.push(token);
                                                 }
                                             }
                                             if (!lexErrorFound && !keywordFound) {
                                                 lextext += "Found Token T_ID [ " + tokens.charAt(lastTokenIndex) + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) + "\n";
+                                                var token = new TSC.Token("T_ID", tokens.charAt(lastTokenIndex), lineNumber, (lastTokenIndex - lastEndLineIndex));
+                                                validLexedTokens.push(token);
                                             }
                                             lastTokenIndex++;
                                         }
                                     }
                                     // Now print the digit
-                                    if (!lexErrorFound)
+                                    if (!lexErrorFound) {
                                         lextext += "Found Token T_DIGIT [ " + currentChar + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
+                                        var token = new TSC.Token("T_DIGIT", currentChar, lineNumber, (currentTokenIndex - lastEndLineIndex));
+                                        validLexedTokens.push(token);
+                                    }
                                     lastTokenIndex = currentTokenIndex;
                                     tokenFound = true;
                                     currentToken = "";
@@ -287,8 +317,11 @@ var TSC;
                                     // check for !=
                                     currentToken = currentChar + tokens.charAt(currentTokenIndex + 1);
                                     if (Symbols['T_NOT_EQUAL'].test(currentToken)) {
-                                        if (!lexErrorFound)
+                                        if (!lexErrorFound) {
                                             lextext += "Found Token T_NOT_EQUAL [ " + currentToken + " ] " + " at line " + lineNumber + " index " + (currentTokenIndex - lastEndLineIndex) + "\n";
+                                            var token = new TSC.Token("T_NOT_EQUAL", currentToken, lineNumber, (currentTokenIndex - lastEndLineIndex));
+                                            validLexedTokens.push(token);
+                                        }
                                         lastTokenIndex = currentTokenIndex;
                                         currentTokenIndex++;
                                         tokenFound = true;
