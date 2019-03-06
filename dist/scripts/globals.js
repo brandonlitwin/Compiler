@@ -11,6 +11,7 @@ var currentToken = "";
 var errorCount = 0;
 var EOF = "$";
 var lexErrorFound = false;
+var parseErrorFound = true;
 var lastTokenIndex = 0;
 var lastTokenTypeFound = "";
 var lastToken = "";
