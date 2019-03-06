@@ -266,7 +266,7 @@ var TSC;
                                     // If EOP is found, assume program is finished
                                     if (Symbols[regex] == Symbols['T_EOP'] && !inString) {
                                         if (!lexErrorFound)
-                                            lextext += "Finished program " + programCount + "\n";
+                                            lextext += "Finished lexing program " + programCount + "\n";
                                         lexErrorFound = false;
                                         inString = false;
                                         if (!EOPFound)

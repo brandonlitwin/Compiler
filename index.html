@@ -16,7 +16,7 @@ CMPT 432 - Compilers
 	<script type="text/javascript" src="codemirror/js/jquery.min.js"></script>
 	<script type="text/javascript" src="codemirror/plugin/lib/codemirror.js"></script>
 	<!--script type="text/javascript" src="codemirror/js/default.js"></script-->
-	<h1>Project One Compiler</h1>
+	<h1>Project Two Compiler</h1>
 
     <div>
         <div class="source">
@@ -32,6 +32,7 @@ CMPT 432 - Compilers
         </div>        
 	</div>
 	<script type="text/javascript" src="dist/scripts/lexer.js"></script>	
+	<script type="text/javascript" src="dist/scripts/parser.js"></script>
 	<script type="text/javascript" src="dist/scripts/globals.js"></script>	
 	<script type="text/javascript" src="dist/scripts/token.js"></script>
     <script type="text/javascript">
@@ -64,10 +65,19 @@ CMPT 432 - Compilers
         		lineNumbers: true
 			});
 			tokens = editor.getValue();
-			if (verboseOn)
+			if (verboseOn) {
 				putMessage(_Lexer.lex());
-			else
-				_Lexer.lex()
+				if (warningText != "") 
+					putMessage(warningText);
+				if (errorText != "")
+					putMessage(errorText);
+				else
+					putMessage(_Parser.parse());
+			}
+			else {
+				_Lexer.lex();
+				_Parser.parse();
+			}
 			if (warningText != "")
 				putMessage(warningText);
 			if (errorText != "")

@@ -3,6 +3,7 @@ Brandon Litwin
 CMPT 432 - Compilers
 */
 var _Lexer = TSC.Lexer;
+var _Parser = TSC.Parser;
 // Global variables
 var tokens = "";
 var tokenIndex = 0;
@@ -23,6 +24,8 @@ var verboseOn = true;
 var inString = false;
 var startStringIndex = 0;
 var EOPFound = false;
-var lineNumber = 0;
+var lineNumber = 1;
 var lastEndLineIndex = 0;
 var validLexedTokens = [];
+var currentParseToken;
+var currentParseTokenIndex = 0;
