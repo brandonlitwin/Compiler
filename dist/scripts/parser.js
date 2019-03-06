@@ -70,7 +70,9 @@ var TSC;
         };
         Parser.parseStatementList = function () {
             if (this.parseStatement()) {
-                return true;
+                this.parsetext += "Parsed valid statement " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                if (this.parseStatementList())
+                    return true;
             }
             else {
                 // an empty statement is also valid
@@ -130,7 +132,7 @@ var TSC;
                 this.parsetext += "Parsed ID at line " + currentParseToken.line + " index " + currentParseToken.index;
                 if (this.matchToken("T_ASSIGNMENT_OP")) {
                     this.parsetext += "Parsed Assignment Operator " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
-                    if (this.parseExpr) {
+                    if (this.parseExpr()) {
                         this.parsetext += "Parsed valid expression at line " + currentParseToken.line + " index " + currentParseToken.index;
                     }
                     else {
@@ -202,17 +204,118 @@ var TSC;
         Parser.parseExpr = function () {
             if (this.parseIntExpr() || this.parseBooleanExpr() || this.parseStringExpr() || this.matchToken("T_ID")) {
                 this.parsetext += "Parsed valid expression " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                return true;
             }
             else {
-                errorText = "Parse Error: Expected valid expression (Int, String, Boolean, or ID) and found " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
                 return false;
             }
         };
         Parser.parseBooleanExpr = function () {
+            if (this.matchToken("L_PAREN")) {
+                if (this.parseExpr()) {
+                    if (this.matchToken("T_EQUALS") || this.matchToken("T_NOT_EQUAL")) {
+                        if (this.parseExpr()) {
+                            if (this.matchToken("R_PAREN")) {
+                                this.parsetext += "Parsed " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                                return true;
+                            }
+                            else {
+                                errorText = "Parse Error: Expected ) at end of boolean expression and found " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                                parseErrorFound = true;
+                                return false;
+                            }
+                        }
+                        else {
+                            errorText = "Parse Error: Expected valid expression after boolean operator and found " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                            parseErrorFound = true;
+                            return false;
+                        }
+                    }
+                    else {
+                        errorText = "Parse Error: Expected valid boolean expression == or != and found " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                        parseErrorFound = true;
+                        return false;
+                    }
+                }
+                else {
+                    errorText = "Parse Error: Expected valid expression before boolean operator and found " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                    parseErrorFound = true;
+                    return false;
+                }
+            }
+            else {
+                if (this.matchToken("T_TRUE") || this.matchToken("T_FALSE")) {
+                    this.parsetext += "Found valid boolean value " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                    return true;
+                }
+                return false;
+            }
         };
         Parser.parseIntExpr = function () {
+            if (this.matchToken("T_DIGIT")) {
+                this.parsetext += "Parsed digit " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                if (this.matchToken("T_ADDITION_OP")) {
+                    this.parsetext += "Parsed addition operator " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                    if (this.parseExpr()) {
+                        this.parsetext += "Parsed valid expression " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                        return true;
+                    }
+                    else {
+                        errorText = "Parse Error: Expected valid expression after addition operator and found " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                        parseErrorFound = true;
+                        return false;
+                    }
+                }
+                else {
+                    // digit is still a valid expression
+                    return true;
+                }
+            }
+            else {
+                return false;
+            }
         };
         Parser.parseStringExpr = function () {
+            if (this.matchToken("T_QUOTE")) {
+                this.parsetext += "Parsed quote at beginning of string at line " + currentParseToken.line + " index " + currentParseToken.index;
+                if (this.parseCharList()) {
+                    this.parsetext += "Parsed valid character list " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                    if (this.matchToken("T_QUOTE")) {
+                        this.parsetext += "Parsed quote at end of valid string expression at line " + currentParseToken.line + " index " + currentParseToken.index;
+                        return true;
+                    }
+                    else {
+                        errorText = "Parse Error: Expected quote at end of string expression and found " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                        parseErrorFound = true;
+                        return false;
+                    }
+                }
+                else {
+                    errorText = "Parse Error: Expected valid character list inside string and found " + currentParseToken.value + " at line " + currentParseToken.line + " index " + currentParseToken.index;
+                    parseErrorFound = true;
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+        };
+        Parser.parseCharList = function () {
+            if (this.matchToken("T_CHAR")) {
+                if (this.parseCharList()) {
+                    return true;
+                }
+            }
+            else if (this.matchToken("T_SPACE")) {
+                this.parsetext += "Parsed space at line " + currentParseToken.line + " index " + currentParseToken.index;
+                if (this.parseCharList()) {
+                    return true;
+                }
+            }
+            else {
+                this.parsetext += "Parsed empty string at line " + currentParseToken.line + " index " + currentParseToken.index;
+                return true;
+            }
         };
         Parser.matchToken = function (token) {
             if (currentParseToken.type == token) {
