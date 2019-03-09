@@ -78,6 +78,7 @@ CMPT 432 - Compilers
 				_Lexer.lex();
 				_Parser.parse();
 			}
+			console.log(errorText);
 			if (warningText != "")
 				putMessage(warningText);
 			if (errorText != "")
