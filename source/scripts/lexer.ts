@@ -196,7 +196,7 @@ module TSC
 										if (Symbols['T_EQUALS'].test(currentToken)) {
 											if (!lexErrorFound) {
 												lextext += "Found Token T_EQUALS [ " + currentToken + " ] " + " at line " + lineNumber + " index " + (lastTokenIndex - lastEndLineIndex) +  "\n";
-												var token: Token = new Token(regex, currentToken, lineNumber, (lastTokenIndex - lastEndLineIndex));
+												var token: Token = new Token("T_EQUALS", currentToken, lineNumber, (lastTokenIndex - lastEndLineIndex));
 												validLexedTokens.push(token);
 											}
 											lastTokenIndex = currentTokenIndex;

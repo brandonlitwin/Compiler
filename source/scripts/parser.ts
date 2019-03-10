@@ -11,32 +11,22 @@ module TSC {
         public static parse() {
             errorText = "";
             this.parsetext = "Parsing program 1...\n";
-            /*for (var i = 0; i < validLexedTokens.length; i++) {
-                this.parsetext += validLexedTokens[i].type + " " + typeof validLexedTokens[i] + "\n";
-            }*/
             currentParseToken = validLexedTokens[currentParseTokenIndex];
 
             if(this.parseProgram() && errorText == "") {
                 this.parsetext += "Parse completed with no errors!";
             } else {
-                //if (!morePrograms) {
                 errorText += "Found " + this.parseErrorCount + " parse errors";
-                
-                
             }
 
             return this.parsetext;
 
         }
         public static parseProgram() {
-            if (this.parseBlock()) {
-                if(!this.matchToken("T_EOP")) {
-                    errorText = "Parse Error: No End of Program ($) found\n";
-                    parseErrorFound = true;
-                    this.parseErrorCount++;
+            if (this.parseBlock(false)) {
+                if(!this.matchToken("T_EOP", false)) {
                     return false;
                 } else {
-                    this.parsetext += "Found End of Program at line " + currentParseToken.lineNumberNumber + " index " + currentParseToken.index + "\n";
                     return true;
                 }
             } else {
@@ -44,42 +34,32 @@ module TSC {
             }
            
         }
-        public static parseBlock() {
-            if(!this.matchToken("T_L_BRACE")) {
-                errorText = "Parse Error: Expected { at beginning of program block and found " + currentParseToken.value + "  at line " + currentParseToken.lineNumberNumber + " index " + currentParseToken.index + "\n";
-                parseErrorFound = true;
-                this.parseErrorCount++;
+        public static parseBlock(inStatementOrExpr) {
+            console.log("block");
+            if(!this.matchToken("T_L_BRACE", inStatementOrExpr)) {
                 return false;
             } else {
-                this.parsetext += "Parsed Token " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
                 if (this.parseStatementList()) {
-                    this.parsetext += "Parsed valid statement list at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    if (this.matchToken("T_R_BRACE")) {
-                        this.parsetext += "Parse Token " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+                    console.log("parsed that statement list")
+                    if (this.matchToken("T_R_BRACE", inStatementOrExpr)) {
                         return true;
                     } else {
-                        errorText = "Parse Error: Expected } at end of program block and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                        parseErrorFound = true;
-                        this.parseErrorCount++;
                         return false;
                     }
                 } else {
-                    errorText = "Parse Error: Expected statement list and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    parseErrorFound = true;
-                    this.parseErrorCount++;
                     return false;
                 }
             }
         }
         public static parseStatementList() {
+            console.log("statement list");
             if(this.parseStatement()) {
-                this.parsetext += "Parsed valid statement " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+                console.log("parsed statement in statement list")
                 if (this.parseStatementList())
                     return true;
             } else {
                 // an empty statement is also valid
                 if (!parseErrorFound) {
-                    this.parsetext += "Parsed empty statement at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
                     return true;
                 } else {
                     return false;
@@ -89,241 +69,135 @@ module TSC {
         }
         public static parseStatement() {
             if (this.parsePrintStatement() || this.parseAssignmentStatement() || this.parseVarDecl() ||
-                this.parseWhileStatement() || this.parseIfStatement() || this.parseBlock()) {
+                this.parseWhileStatement() || this.parseIfStatement() || this.parseBlock(true)) {
                     return true;
              } else {
                  return false;
              }
         }
         public static parsePrintStatement() {
-            if (this.matchToken("T_PRINT")) {
-                this.parsetext += "Parsed Print keyword at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                if (this.matchToken("T_L_PAREN")) {
-                    this.parsetext += "Parsed " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    if (this.parseExpr()) {
-                        this.parsetext += "Parsed valid expression at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                        if (this.matchToken("T_R_PAREN")) {
-                            this.parsetext += "Parsed " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+            if (this.matchToken("T_PRINT", true)) 
+                if (this.matchToken("T_L_PAREN", true)) 
+                    if (this.parseExpr()) 
+                        if (this.matchToken("T_R_PAREN", true)) 
                             return true;
-                        } else {
-                            errorText = "Parse Error: Expected ) and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                            parseErrorFound = true;
-                            this.parseErrorCount++;
-                            return false;
-                        }
-                    } else {
-                        errorText = "Parse Error: Expected expression and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                        parseErrorFound = true;
-                        this.parseErrorCount++;
-                        return false;
-                    }
-                } else {
-                    errorText = "Parse Error: Expected ( and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    parseErrorFound = true;
-                    this.parseErrorCount++;
-                    return false;
-                }
-            } else {
-                return false;
-            }
+
+            return false;
         }
         public static parseAssignmentStatement() {
-            if (this.matchToken("T_ID")) {
-                this.parsetext += "Parsed ID at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                if (this.matchToken("T_ASSIGNMENT_OP")) {
-                    this.parsetext += "Parsed Assignment Operator " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+            if (this.matchToken("T_ID", true)) 
+                if (this.matchToken("T_ASSIGNMENT_OP", true)) 
                     if (this.parseExpr()) {
-                        this.parsetext += "Parsed valid expression at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    } else {
-                        errorText = "Parse Error: Expected expression and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                        parseErrorFound = true;
-                        this.parseErrorCount++;
-                        return false;
-                    }
-                } else {
-                    errorText = "Parse Error: Expected Assignment Operator = and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    parseErrorFound = true;
-                    this.parseErrorCount++;
-                    return false;
-                }
-            } else {
-                return false;
-            }
+                        this.parsetext += "Parsed Assignment Statement at line " + (currentParseToken.lineNumber-1) + " index " + currentParseToken.index + "\n"; 
+                        return true;
+                    } 
+
+            return false
 
         }
         public static parseVarDecl() {
             // parse type
-            if (this.matchToken("T_INT") || this.matchToken("T_BOOLEAN") || this.matchToken("T_STRING")) {
-                this.parsetext += "Parsed valid type declaration " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                if (this.matchToken("T_ID")) {
-                    this.parsetext += "Parsed variable declaration ID " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+            if (this.matchToken("T_INT", true) || this.matchToken("T_BOOLEAN", true) || this.matchToken("T_STRING", true)) 
+                console.log("looking for id in var dec");
+                if (this.matchToken("T_ID", true)) 
                     return true;
-                } else {
-                    errorText = "Parse Error: Expected ID following type declaration and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    parseErrorFound = true;
-                    this.parseErrorCount++;
-                    return false;
-                }
-            } else {
-                return false;
-            }
+
+            return false
         }
         public static parseWhileStatement() {
-            if (this.matchToken("T_WHILE")) {
-                this.parsetext += "Parsed while keyword at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                if (this.parseBooleanExpr()) {
-                    this.parsetext += "Parsed valid boolean expression " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    return this.parseBlock();
-                } else {
-                    errorText = "Parse Error: Expected boolean expression and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    parseErrorFound = true;
-                    this.parseErrorCount++;
-                    return false;
-                }
-            } else {
-                return false;
-            }
+            if (this.matchToken("T_WHILE", true)) 
+                if (this.parseBooleanExpr()) 
+                    return this.parseBlock(true);
+                 
+            return false;
         }
         public static parseIfStatement() {
-            if (this.matchToken("T_IF")) {
-                this.parsetext += "Parsed if keyword at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                if (this.parseBooleanExpr()) {
-                    this.parsetext += "Parsed valid boolean expression " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    return this.parseBlock();
-                } else {
-                    errorText = "Parse Error: Expected boolean expression and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    parseErrorFound = true;
-                    this.parseErrorCount++;
-                    return false;
-                }
-            } else {
-                return false;
-            }
+            if (this.matchToken("T_IF", true)) 
+                if (this.parseBooleanExpr()) 
+                    return this.parseBlock(true);
+               
+            return false;
         }
         public static parseExpr() {
-            if (this.parseIntExpr() || this.parseBooleanExpr() || this.parseStringExpr() || this.matchToken("T_ID")) {
-                this.parsetext += "Parsed valid expression " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+            if (this.parseIntExpr() || this.parseBooleanExpr() || this.parseStringExpr() || this.matchToken("T_ID", false)) {
                 return true;
             } else {
                 return false;
             }
         }
         public static parseBooleanExpr() {
-            if (this.matchToken("L_PAREN")) {
-                if (this.parseExpr()) {
-                    if (this.matchToken("T_EQUALS") || this.matchToken("T_NOT_EQUAL")) {
-                        if (this.parseExpr()) {
-                            if (this.matchToken("R_PAREN")) {
-                                this.parsetext += "Parsed " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+            if (this.matchToken("T_L_PAREN", true)) {
+                if (this.parseExpr()) 
+                    if (this.matchToken("T_EQUALS", true) || this.matchToken("T_NOT_EQUAL", true)) 
+                        if (this.parseExpr()) 
+                            if (this.matchToken("T_R_PAREN", true)) {
+                                this.parsetext += "Parsed Boolean Expression at line " + (currentParseToken.lineNumber) + " index " + currentParseToken.index + "\n";
                                 return true;
-                            } else {
-                                errorText = "Parse Error: Expected ) at end of boolean expression and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n"; 
-                                parseErrorFound = true;
-                                this.parseErrorCount++;
-                                return false;
                             }
-                        } else {
-                            errorText = "Parse Error: Expected valid expression after boolean operator and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n"; 
-                            parseErrorFound = true;
-                            this.parseErrorCount++;
-                            return false;
-                        }
-                    } else {
-                        errorText = "Parse Error: Expected valid boolean expression == or != and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n"; 
-                        parseErrorFound = true;
-                        this.parseErrorCount++;
-                        return false;
-                    }
-                } else {
-                    errorText = "Parse Error: Expected valid expression before boolean operator and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n"; 
-                    parseErrorFound = true;
-                    this.parseErrorCount++;
-                    return false;
-                }
+                return false;
             } else {
-                if (this.matchToken("T_TRUE") || this.matchToken("T_FALSE")) {
-                    this.parsetext += "Found valid boolean value " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+                if (this.matchToken("T_TRUE", true) || this.matchToken("T_FALSE", true)) {
                     return true;
                 } 
                 return false;
             }
         }
         public static parseIntExpr() {
-            if (this.matchToken("T_DIGIT")) {
-                this.parsetext += "Parsed digit " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                if (this.matchToken("T_ADDITION_OP")) {
-                    this.parsetext += "Parsed addition operator " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    if (this.parseExpr()) {
-                        this.parsetext += "Parsed valid expression " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+            if (this.matchToken("T_DIGIT", true)) {
+                if (this.matchToken("T_ADDITION_OP", true)) {
+                    if (this.parseExpr())
                         return true;
-                    } else {
-                        errorText = "Parse Error: Expected valid expression after addition operator and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n"; 
-                        parseErrorFound = true;
-                        this.parseErrorCount++;
+                     else 
                         return false;
-                    }
+                    
 
-                } else {
+                } else 
                     // digit is still a valid expression
                     return true;
-                }
 
-            } else {
+            } else 
                 return false;
-            }
 
         }
         public static parseStringExpr() {
-            if (this.matchToken("T_QUOTE")) {
-                this.parsetext += "Parsed quote at beginning of string at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                if (this.parseCharList()) {
-                    this.parsetext += "Parsed valid character list " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    if (this.matchToken("T_QUOTE")) {
-                        this.parsetext += "Parsed quote at end of valid string expression at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+            if (this.matchToken("T_QUOTE", true)) 
+                if (this.parseCharList()) 
+                    if (this.matchToken("T_QUOTE", true)) 
                         return true;
-                    } else {
-                        errorText = "Parse Error: Expected quote at end of string expression and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n"; 
-                        parseErrorFound = true;
-                        this.parseErrorCount++;
-                        return false;
-                    }
-                } else {
-                    errorText = "Parse Error: Expected valid character list inside string and found " + currentParseToken.value + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n"; 
-                    parseErrorFound = true;
-                    this.parseErrorCount++;
-                    return false;
-                }
-            } else {
-                return false;
-            }
+            
+            return false;
         }
         public static parseCharList() {
-            if (this.matchToken("T_CHAR")) {
-                if (this.parseCharList()) {
+            if (this.matchToken("T_Char", true)) {
+                if (this.parseCharList()) 
                     return true;
-                }
-            } else if (this.matchToken("T_SPACE")) {
-                this.parsetext += "Parsed space at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+            } else if (this.matchToken("T_SPACE", true)) {
                 if (this.parseCharList()) {
                     return true;
                 }
             }
-            else {
-                this.parsetext += "Parsed empty string at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+            else 
+                // an empty char is also valid
                 return true;
-            }
         }
-        public static matchToken(token) {
+        public static matchToken(token, inStatementOrExpr) {
+            console.log("token to match is " + token + " and current token is " + currentParseToken.type);
             if (currentParseToken.type == token) {
+                this.parsetext += "Expected " + token + " and found " + currentParseToken.type + " [" + currentParseToken.value + "] at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
                 currentParseTokenIndex++;
                 if (currentParseTokenIndex < validLexedTokens.length)
                     currentParseToken = validLexedTokens[currentParseTokenIndex];
                 return true;
             } else {
+                if (!parseErrorFound && !inStatementOrExpr) {
+                    errorText = "Parse Error: Expected " + token + " and found " + currentParseToken.type + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+                    parseErrorFound = true;
+                    this.parseErrorCount++;
+                }
+                    
                 return false;
             }
-
-
-        }
+        } 
+            
     }
 }
