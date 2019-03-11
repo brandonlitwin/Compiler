@@ -11,10 +11,6 @@ var TSC;
         //static parsedAProgram: boolean = false;
         Parser.parse = function (tokenIndex) {
             this.currentParseTokenIndex = tokenIndex;
-            /*if (!this.parsedAProgram)
-                this.currentParseTokenIndex = 0;
-            else
-                this.currentParseTokenIndex = tokenIndex;*/
             errorText = "";
             this.parsetext = "Parsing program " + programCount + "...\n";
             currentParseToken = validLexedTokens[this.currentParseTokenIndex];
@@ -209,6 +205,7 @@ var TSC;
         };
         Parser.parseErrorCount = 0;
         Parser.currentParseTokenIndex = 0;
+        Parser.cst = new TSC.Tree();
         return Parser;
     }());
     TSC.Parser = Parser;

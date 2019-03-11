@@ -9,13 +9,10 @@ module TSC {
         static parsetext: string;
         static parseErrorCount: number = 0;
         static currentParseTokenIndex: number = 0;
+        static cst: Tree = new Tree();
         //static parsedAProgram: boolean = false;
         public static parse(tokenIndex) {
             this.currentParseTokenIndex = tokenIndex;
-            /*if (!this.parsedAProgram)
-                this.currentParseTokenIndex = 0;
-            else
-                this.currentParseTokenIndex = tokenIndex;*/
             errorText = "";
             this.parsetext = "Parsing program " + programCount + "...\n";
             currentParseToken = validLexedTokens[this.currentParseTokenIndex];
