@@ -46,6 +46,8 @@ module TSC
 				// 3. Symbol
 				// 4. Digit
 				// 5. Char
+				errorText = "";
+				warningText = "";
 				programCount++;
 				var lextext = "Lexing program " + programCount + "...\n";
 				for (currentTokenIndex; currentTokenIndex < tokens.length; currentTokenIndex++) {
