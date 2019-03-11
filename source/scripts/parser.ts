@@ -8,18 +8,30 @@ module TSC {
     export class Parser {
         static parsetext: string;
         static parseErrorCount: number = 0;
-        public static parse() {
+        static currentParseTokenIndex: number = 0;
+        //static parsedAProgram: boolean = false;
+        public static parse(tokenIndex) {
+            this.currentParseTokenIndex = tokenIndex;
+            /*if (!this.parsedAProgram)
+                this.currentParseTokenIndex = 0;
+            else
+                this.currentParseTokenIndex = tokenIndex;*/
             errorText = "";
-            this.parsetext = "Parsing program 1...\n";
-            currentParseToken = validLexedTokens[currentParseTokenIndex];
+            this.parsetext = "Parsing program " + programCount + "...\n";
+            currentParseToken = validLexedTokens[this.currentParseTokenIndex];
+            console.log(validLexedTokens);
+            console.log(currentParseToken);
 
             if(this.parseProgram() && errorText == "") {
-                this.parsetext += "Parse completed with no errors!";
+                console.log("finished parse");
+                //this.parsedAProgram = true;
+                this.parsetext += "Parse of program " + programCount + " completed with no errors!\n";
             } else {
                 errorText += "Found " + this.parseErrorCount + " parse errors";
+                console.log(errorText);
             }
 
-            return this.parsetext;
+            return [this.parsetext, this.currentParseTokenIndex];
 
         }
         public static parseProgram() {
@@ -184,9 +196,9 @@ module TSC {
             console.log("token to match is " + token + " and current token is " + currentParseToken.type);
             if (currentParseToken.type == token) {
                 this.parsetext += "Expected " + token + " and found " + currentParseToken.type + " [" + currentParseToken.value + "] at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                currentParseTokenIndex++;
-                if (currentParseTokenIndex < validLexedTokens.length)
-                    currentParseToken = validLexedTokens[currentParseTokenIndex];
+                this.currentParseTokenIndex++;
+                if (this.currentParseTokenIndex < validLexedTokens.length)
+                    currentParseToken = validLexedTokens[this.currentParseTokenIndex];
                 return true;
             } else {
                 if (!parseErrorFound && !inStatementOrExpr) {

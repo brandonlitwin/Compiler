@@ -7,7 +7,7 @@ Project 1
 module TSC
 	{
 	export class Lexer {
-		public static lex() {
+		public static lex(currentTokenIndex) {
 		    {
 				// Creating all the RegEx for the grammar
 				var Keywords = {
@@ -46,8 +46,8 @@ module TSC
 				// 3. Symbol
 				// 4. Digit
 				// 5. Char
-				
-				var lextext = "Lexing program 1...\n";
+				programCount++;
+				var lextext = "Lexing program " + programCount + "...\n";
 				for (currentTokenIndex; currentTokenIndex < tokens.length; currentTokenIndex++) {
 					var tokenFound = false;
 					var currentChar = tokens.charAt(currentTokenIndex);
@@ -272,8 +272,12 @@ module TSC
 											lextext += "Finished lexing program " + programCount + "\n";
 										lexErrorFound = false;
 										inString = false;
-										if (!EOPFound)
-											programCount++;
+										if (!EOPFound) {
+											//programCount++;
+											console.log(lextext);
+											currentTokenIndex++;
+											return [lextext, currentTokenIndex];
+										}
 										if (currentTokenIndex < tokens.length - 1) {
 											lextext += "Lexing program " + programCount + "...\n";
 										}
@@ -404,7 +408,8 @@ module TSC
 					}	
 									
 				}
-				return lextext;	
+				console.log(lextext);
+				return [lextext, currentTokenIndex];	
 			}
 				
 		    }

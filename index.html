@@ -41,10 +41,11 @@ CMPT 432 - Compilers
 	        document.getElementById("taOutput").value = "";
 	        // Set the initial values for our globals.
 	        tokens = "";
-	        tokenIndex = 0;
-	        currentToken = ' ';
+	        currentTokenIndex = 0;
+			currentToken = ' ';
 			errorCount = 0;    
-			verboseOn = true;    
+			verboseOn = true; 
+			currentParseTokenIndex = 0;   
 		}
 		
 		function verboseModeSet() {
@@ -65,19 +66,29 @@ CMPT 432 - Compilers
         		lineNumbers: true
 			});
 			tokens = editor.getValue();
+			console.log(tokens);
 			if (verboseOn) {
-				putMessage(_Lexer.lex());
-				if (warningText != "") 
-					putMessage(warningText);
-				if (errorText != "")
-					putMessage(errorText);
-				else
-					putMessage(_Parser.parse());
+				while (currentTokenIndex < tokens.length - 1) {
+					console.log("current index is before lex " + currentTokenIndex);
+					lexresults = _Lexer.lex(currentTokenIndex);
+					putMessage(lexresults[0]);
+					currentTokenIndex = lexresults[1];
+					console.log("current index is after lex " + currentTokenIndex);
+					if (warningText != "") 
+						putMessage(warningText);
+					if (errorText != "")
+						putMessage(errorText);
+					else {
+						parseresults = _Parser.parse(currentParseTokenIndex)
+						putMessage(parseresults[0]);
+						currentParseTokenIndex = parseresults[1];
+					}
+				}
 			}
-			else {
+			/*else {
 				_Lexer.lex();
 				_Parser.parse();
-			}
+			}*/
 			console.log(errorText);
 			if (warningText != "")
 				putMessage(warningText);
