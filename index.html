@@ -10,6 +10,7 @@ CMPT 432 - Compilers
 	<!--link rel="stylesheet" href="dist/styles/bootstrap.min.css"-->
     <link rel="stylesheet" type="text/css" href="dist/styles/compiler.css" />
 	<link rel="stylesheet" href="codemirror/plugin/lib/codemirror.css">
+	<link rel="stylesheet" href="dist/Treant/Treant.css">
 </head>
 <body onload="init();">
 	<!--Loading JQuery-->
@@ -31,11 +32,15 @@ CMPT 432 - Compilers
             <textarea id="taOutput"></textarea>
         </div>        
 	</div>
+	<h1>Visual CST</h1>
+	<div id="cst" style="width:1000px; height:400px"></div>
+	<script type="text/javascript" src="dist/Treant/Treant.js"></script>
 	<script type="text/javascript" src="dist/scripts/tree.js"></script>
 	<script type="text/javascript" src="dist/scripts/lexer.js"></script>	
 	<script type="text/javascript" src="dist/scripts/parser.js"></script>
 	<script type="text/javascript" src="dist/scripts/globals.js"></script>	
 	<script type="text/javascript" src="dist/scripts/token.js"></script>
+	<script type="text/javascript" src="dist/Treant/vendor/raphael.js"></script>
     <script type="text/javascript">
 		 function init() {
 	        // Clear the message box.
@@ -47,6 +52,12 @@ CMPT 432 - Compilers
 			errorCount = 0;    
 			verboseOn = true; 
 			currentParseTokenIndex = 0;   
+			var cst_visual = new Treant({
+				chart: {
+					container: "#cst"
+				},
+				nodeStructure: {}
+			});
 		}
 		
 		function verboseModeSet() {
@@ -66,6 +77,56 @@ CMPT 432 - Compilers
     		var editor = CodeMirror.fromTextArea(code, {
         		lineNumbers: true
 			});
+			var treantCST = {
+				chart: {
+					container: "#cst"
+				},
+				
+				nodeStructure: {
+					text: { name: "Root" },
+					children: [
+					]
+				}
+			};
+			/*var simple_chart_config = {
+				chart: {
+					container: "#cst"
+				},
+	
+				nodeStructure: {
+					text: { name: "Root" },
+					children: [
+							{
+								text: { name: "First child" }
+							},
+							{
+								text: { name: "Second child" }
+							}
+					]			
+				}
+			};*/
+			var config = {
+				container: "#cst"
+			};
+
+			var parent_node = {
+				text: { name: "Root" }
+			};
+
+			var first_child = {
+				parent: parent_node,
+				text: { name: "First child" }
+			};
+
+			var second_child = {
+				parent: parent_node,
+				text: { name: "Second child" }
+			};
+
+			var simple_chart_config = [
+				config, parent_node,
+				first_child, second_child 
+			];
 			tokens = editor.getValue();
 			console.log(tokens);
 			if (verboseOn) {
@@ -84,9 +145,20 @@ CMPT 432 - Compilers
 						console.log(validLexedTokens);
 					}
 					else {
-						parseresults = _Parser.parse(currentParseTokenIndex)
+						parseresults = _Parser.parse(currentParseTokenIndex, treantCST);
 						putMessage(parseresults[0]);
 						currentParseTokenIndex = parseresults[1];
+						cst = parseresults[2];
+						var testcst = new Treant(simple_chart_config);
+						console.log(testcst);
+						//cst_visual = new Treant(cst);
+						//cst_visual = new Treant(treantCST);
+						//console.log(parseresults[2].toStringTree());
+						if (errorText != ""){
+							putMessage(errorText);
+						}
+							
+						
 					}
 				}
 			}

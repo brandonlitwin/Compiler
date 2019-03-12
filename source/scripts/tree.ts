@@ -15,8 +15,16 @@ module TSC {
                 this.root = node;
                 this.currNode = node;
             } else {
+                //this.currNode = node;
+                console.log("node.value is " + node.value);
+                console.log("this.currNode is " + this.currNode.value);
                 node.parent = this.currNode;
+                this.currNode = node.parent;
                 this.currNode.children.push(node);
+                for (var i = 0; i < this.currNode.children.length; i++)
+                    console.log("this node's children are " + this.currNode.children[i].value);
+                console.log("done");
+                
             }
         }
 
@@ -24,20 +32,28 @@ module TSC {
             // move up the tree
             if (this.currNode.parent != null)
                 this.currNode = this.currNode.parent;
+            //console.log(this.currNode.value.type);
         }
 
-        public toString() {
+        public toStringTree() {
             // print string representation of tree
             let traversalResult = "";
             function expand(node, depth) {
                 for (var i = 0; i < depth; i++) {
                     traversalResult += "-";
                 }
-
-                if (!node.children || node.children.length == 0) {
-                    traversalResult += "[" + node.name + "]\n";
+                console.log(node + " " + node.children);
+                if (node.children.length == 0) {
+                    if (node.value.value != undefined)
+                        traversalResult += "[" + node.value.value + "]\n";
+                    else
+                        traversalResult += "[" + node.value + "]\n";
                 } else {
-                    traversalResult += "<" + node.name + "> \n";
+                    if (node.value.type != undefined)
+                        traversalResult += "<" + node.value.type + "> \n";
+                    else
+                        traversalResult += "<" + node.value + "> \n";
+                    
                 
                     for (var i = 0; i < node.children.length; i++) {
                         expand(node.children[i], depth + 1);
