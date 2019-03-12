@@ -38,7 +38,7 @@ module TSC {
                 } else {
                     if (this.cst.currNode.value.type == "T_EOP") {
                         // look for $, and move it to child of Program
-                        this.cst.makeNodeChildOf(this.cst.currNode, "Block");
+                        this.cst.makeNodeChildOf(this.cst.currNode, "Program"+programCount);
                     }
                     return true;
                 }
@@ -58,7 +58,7 @@ module TSC {
                     if (this.matchToken("T_R_BRACE", inStatementOrExpr)) {
                         if (this.cst.currNode.value.type == "T_R_BRACE") {
                             // look for }, and move it to child of StatementList
-                            this.cst.makeNodeChildOf(this.cst.currNode, "StatementList");      
+                            this.cst.makeNodeChildOf(this.cst.currNode, "Block");      
                         }
                         return true;
                     } else {
@@ -80,6 +80,8 @@ module TSC {
             } else {
                 // an empty statement is also valid
                 if (!parseErrorFound) {
+                    this.cst.addNode("\u03B5");
+                    this.cst.moveUp();
                     this.cst.moveUp();
                     return true;
                 } else {
@@ -99,13 +101,25 @@ module TSC {
              }
         }
         public static parsePrintStatement() {
-            if (this.matchToken("T_PRINT", true)) 
+            if (this.matchToken("T_PRINT", true))
+                this.cst.moveUp(); 
                 if (this.matchToken("T_L_PAREN", true)) 
-                    if (this.parseExpr()) 
-                        if (this.matchToken("T_R_PAREN", true)) {
-                            this.cst.moveUp();
-                            return true;
-                        }
+                    //this.cst.moveUp();
+                    if (this.parseExpr()) {
+                        this.cst.moveUp();
+                        console.log(this.cst.currNode.value);
+                    }
+                        if (this.cst.currNode.value == "Expression") 
+                        // look for Expr, and move it to child of PrintStatement
+                            this.cst.makeNodeChildOf(this.cst.currNode, "PrintStatement");      
+                            if (this.matchToken("T_R_PAREN", true)) {
+                                //this.cst.moveUp();
+                                if (this.cst.currNode.value.type == "T_R_PAREN") {
+                                    this.cst.makeNodeChildOf(this.cst.currNode, "PrintStatement");   
+                                }
+                                //this.cst.moveUp();
+                                return true;
+                            }
 
             return false;
         }
@@ -146,7 +160,9 @@ module TSC {
         public static parseIfStatement() {
             //this.cst.addNode("IfStatement");
             if (this.matchToken("T_IF", true)) 
+                //this.cst.moveUp();
                 if (this.parseBooleanExpr()) 
+                    //this.cst.moveUp();
                     if(this.parseBlock(true)) {
                         this.cst.moveUp();
                         return true;
@@ -186,9 +202,12 @@ module TSC {
         public static parseIntExpr() {
             //this.cst.addNode("IntExpression");
             if (this.matchToken("T_DIGIT", true)) {
+                this.cst.moveUp();
                 if (this.matchToken("T_ADDITION_OP", true)) {
                     if (this.parseExpr()) {
                         this.cst.moveUp();
+                        if (this.cst.currNode.value == "Expression")
+                            this.cst.makeNodeChildOf(this.cst.currNode, "IntExpr");
                         return true;
                     }
                      else 
@@ -208,9 +227,15 @@ module TSC {
         public static parseStringExpr() {
             //this.cst.addNode("StringExpression");
             if (this.matchToken("T_QUOTE", true)) 
+                this.cst.moveUp();
+                if (this.cst.currNode.value.type == "T_QUOTE")
+                    this.cst.makeNodeChildOf(this.cst.currNode, "StringExpr");
                 if (this.parseCharList()) 
+                    //this.cst.moveUp();
                     if (this.matchToken("T_QUOTE", true)) {
-                        this.cst.moveUp();
+                        //this.cst.moveUp();
+                        if (this.cst.currNode.value.type == "T_QUOTE")
+                            this.cst.makeNodeChildOf(this.cst.currNode, "Expression");
                         return true;
                     }
             
@@ -219,6 +244,10 @@ module TSC {
         public static parseCharList() {
             //this.cst.addNode("CharList");
             if (this.matchToken("T_Char", true)) {
+                this.cst.moveUp();
+                if (this.cst.currNode.value == "CharList")
+                    this.cst.moveUp();
+                    this.cst.makeNodeChildOf(this.cst.currNode, "CharList");
                 if (this.parseCharList()) {
                     this.cst.moveUp();
                     return true;
@@ -234,8 +263,27 @@ module TSC {
                 return true;
         }
         public static matchToken(token, inStatementOrExpr) {
-            if (token == "T_Char")
+            if (currentParseToken.type == "T_Char") {
+                this.cst.addNode("CharList");
                 this.cst.addNode("Char");
+            }
+            else if (currentParseToken.type == "T_PRINT")
+                this.cst.addNode("PrintStatement");
+            else if (currentParseToken.type == "T_WHILE")
+                this.cst.addNode("WhileStatement");
+            else if (currentParseToken.type == "T_IF")
+                this.cst.addNode("IfStatement");
+            else if (currentParseToken.type == "T_INT" || currentParseToken.type == "T_BOOLEAN" || currentParseToken.type == "T_STRING")
+                this.cst.addNode("VarDecl");
+            else if (currentParseToken.type == "L_PAREN")
+                this.cst.addNode("BooleanExpr");
+            else if (currentParseToken.type == "T_ADDITION_OP")
+                this.cst.addNode("IntOp");
+            else if (currentParseToken.type == "T_DIGIT")
+                this.cst.addNode("IntExpr");
+                //this.cst.addNode("Digit");
+            //else if (currentParseToken.type == "T_QUOTE")
+                //this.cst.addNode("StringExpr");
             if (currentParseToken.type == token) {
                 this.parsetext += "Expected " + token + " and found " + currentParseToken.type + " [" + currentParseToken.value + "] at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
                 this.cst.addNode(currentParseToken);

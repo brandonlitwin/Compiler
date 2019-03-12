@@ -19,8 +19,6 @@ module TSC {
             let node = new TreeNode(value);
             // if there is no root, make this node the root
             if (this.root == null) {
-                console.log("root is");
-                console.log(node);
                 this.root = node;
                 this.currNode = node;
                 return;
@@ -29,7 +27,6 @@ module TSC {
             } else {
                 node.parent = this.currNode;
                 this.currNode = node.parent;
-                console.log(node);
                 this.currNode.children.push(node);
                 this.moveDown();
                 
@@ -37,13 +34,13 @@ module TSC {
         }
 
         // sometimes the child node will have the wrong parent, so this function gives it back to the correct parent
-        public makeNodeChildOf(child, parent) {
+        public makeNodeChildOf(child, newParent) {
             child.parent.children.splice(-1,1);
-            while (this.currNode.value != parent) {
+            while (this.currNode.value != newParent) {
                 this.moveUp()
             }
-            child.parent = this.currNode.parent;
-            this.currNode.parent.children.push(child);
+            child.parent = this.currNode;
+            this.currNode.children.push(child);
         }
 
         public moveUp() {
@@ -54,13 +51,10 @@ module TSC {
 
         public moveDown(){
             if(this.currNode == null){
-                console.log("can't move down");
                 return;
             }
             let latestChild = this.currNode.children[this.currNode.children.length-1];
             this.currNode = latestChild;
-            console.log("moved down to ");
-            console.log(this.currNode.value);
         }
 
         public buildCST(treantTree, node) {
@@ -93,7 +87,6 @@ module TSC {
                 for (var i = 0; i < depth; i++) {
                     traversalResult += "-";
                 }
-                console.log(node + " " + node.children);
                 if (node.children.length == 0) {
                     if (node.value.value != undefined)
                         traversalResult += "[" + node.value.value + "]\n";
