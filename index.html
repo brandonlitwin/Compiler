@@ -31,6 +31,7 @@ CMPT 432 - Compilers
             <textarea id="taOutput"></textarea>
         </div>        
 	</div>
+	<script type="text/javascript" src="dist/scripts/tree.js"></script>
 	<script type="text/javascript" src="dist/scripts/lexer.js"></script>	
 	<script type="text/javascript" src="dist/scripts/parser.js"></script>
 	<script type="text/javascript" src="dist/scripts/globals.js"></script>	
@@ -76,8 +77,12 @@ CMPT 432 - Compilers
 					console.log("current index is after lex " + currentTokenIndex);
 					if (warningText != "") 
 						putMessage(warningText);
-					if (errorText != "")
+					if (errorText != "") {
 						putMessage(errorText);
+						console.log(validLexedTokens);
+						validLexedTokens = [];
+						console.log(validLexedTokens);
+					}
 					else {
 						parseresults = _Parser.parse(currentParseTokenIndex)
 						putMessage(parseresults[0]);
