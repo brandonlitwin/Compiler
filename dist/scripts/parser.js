@@ -8,19 +8,14 @@ var TSC;
     var Parser = /** @class */ (function () {
         function Parser() {
         }
-        //static parsedAProgram: boolean = false;
         Parser.parse = function (tokenIndex, treantCST) {
             this.treantCST = treantCST;
             this.currentParseTokenIndex = tokenIndex;
             errorText = "";
             this.parsetext = "Parsing program " + programCount + "...\n";
             currentParseToken = validLexedTokens[this.currentParseTokenIndex];
-            console.log(validLexedTokens);
-            console.log(currentParseToken);
             if (this.parseProgram() && errorText == "") {
-                //this.parsedAProgram = true;
                 this.parsetext += "Parse of program " + programCount + " completed with no errors!\n";
-                console.log("node structure is " + this.treantCST['nodeStructure'].text);
                 this.treantCST = (this.cst.buildCST(this.treantCST['nodeStructure'], this.cst.root));
             }
             else {
@@ -36,7 +31,10 @@ var TSC;
                     return false;
                 }
                 else {
-                    this.cst.moveUp();
+                    if (this.cst.currNode.value.type == "T_EOP") {
+                        // look for $, and move it to child of Program
+                        this.cst.makeNodeChildOf(this.cst.currNode, "Block");
+                    }
                     return true;
                 }
             }
@@ -50,9 +48,14 @@ var TSC;
                 return false;
             }
             else {
+                this.cst.moveUp();
                 if (this.parseStatementList()) {
+                    this.cst.moveUp();
                     if (this.matchToken("T_R_BRACE", inStatementOrExpr)) {
-                        this.cst.moveUp();
+                        if (this.cst.currNode.value.type == "T_R_BRACE") {
+                            // look for }, and move it to child of StatementList
+                            this.cst.makeNodeChildOf(this.cst.currNode, "StatementList");
+                        }
                         return true;
                     }
                     else {
@@ -67,6 +70,7 @@ var TSC;
         Parser.parseStatementList = function () {
             this.cst.addNode("StatementList");
             if (this.parseStatement()) {
+                this.cst.moveUp();
                 if (this.parseStatementList()) {
                     this.cst.moveUp();
                     return true;
@@ -95,7 +99,6 @@ var TSC;
             }
         };
         Parser.parsePrintStatement = function () {
-            //this.cst.addNode("PrintStatement");
             if (this.matchToken("T_PRINT", true))
                 if (this.matchToken("T_L_PAREN", true))
                     if (this.parseExpr())
@@ -106,7 +109,6 @@ var TSC;
             return false;
         };
         Parser.parseAssignmentStatement = function () {
-            //this.cst.addNode("AssignmentStatement");
             if (this.matchToken("T_ID", true))
                 if (this.matchToken("T_ASSIGNMENT_OP", true))
                     if (this.parseExpr()) {
@@ -117,7 +119,6 @@ var TSC;
             return false;
         };
         Parser.parseVarDecl = function () {
-            //this.cst.addNode("VarDecl");
             // parse type
             if (this.matchToken("T_INT", true) || this.matchToken("T_BOOLEAN", true) || this.matchToken("T_STRING", true))
                 if (this.matchToken("T_ID", true)) {
@@ -227,7 +228,6 @@ var TSC;
                 return true;
         };
         Parser.matchToken = function (token, inStatementOrExpr) {
-            //console.log("token to match is " + token + " and current token is " + currentParseToken.type);
             if (token == "T_Char")
                 this.cst.addNode("Char");
             if (currentParseToken.type == token) {

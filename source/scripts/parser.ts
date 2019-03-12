@@ -11,20 +11,15 @@ module TSC {
         static currentParseTokenIndex: number = 0;
         static cst: Tree = new Tree();
         static treantCST;
-        //static parsedAProgram: boolean = false;
         public static parse(tokenIndex, treantCST) {
             this.treantCST = treantCST;
             this.currentParseTokenIndex = tokenIndex;
             errorText = "";
             this.parsetext = "Parsing program " + programCount + "...\n";
             currentParseToken = validLexedTokens[this.currentParseTokenIndex];
-            console.log(validLexedTokens);
-            console.log(currentParseToken);
 
             if(this.parseProgram() && errorText == "") {
-                //this.parsedAProgram = true;
                 this.parsetext += "Parse of program " + programCount + " completed with no errors!\n";
-                console.log("node structure is " + this.treantCST['nodeStructure'].text);
                 this.treantCST = (this.cst.buildCST(this.treantCST['nodeStructure'], this.cst.root));
             } else {
                 errorText = "Found " + this.parseErrorCount + " parse errors";
@@ -41,7 +36,10 @@ module TSC {
                 if(!this.matchToken("T_EOP", false)) {
                     return false;
                 } else {
-                    this.cst.moveUp();
+                    if (this.cst.currNode.value.type == "T_EOP") {
+                        // look for $, and move it to child of Program
+                        this.cst.makeNodeChildOf(this.cst.currNode, "Block");
+                    }
                     return true;
                 }
             } else {
@@ -54,9 +52,14 @@ module TSC {
             if(!this.matchToken("T_L_BRACE", inStatementOrExpr)) {
                 return false;
             } else {
+                this.cst.moveUp();
                 if (this.parseStatementList()) {
+                    this.cst.moveUp();
                     if (this.matchToken("T_R_BRACE", inStatementOrExpr)) {
-                        this.cst.moveUp();
+                        if (this.cst.currNode.value.type == "T_R_BRACE") {
+                            // look for }, and move it to child of StatementList
+                            this.cst.makeNodeChildOf(this.cst.currNode, "StatementList");      
+                        }
                         return true;
                     } else {
                         return false;
@@ -69,6 +72,7 @@ module TSC {
         public static parseStatementList() {
             this.cst.addNode("StatementList");
             if(this.parseStatement()) {
+                this.cst.moveUp();
                 if (this.parseStatementList()) {
                     this.cst.moveUp();
                     return true;
@@ -95,7 +99,6 @@ module TSC {
              }
         }
         public static parsePrintStatement() {
-            //this.cst.addNode("PrintStatement");
             if (this.matchToken("T_PRINT", true)) 
                 if (this.matchToken("T_L_PAREN", true)) 
                     if (this.parseExpr()) 
@@ -107,7 +110,6 @@ module TSC {
             return false;
         }
         public static parseAssignmentStatement() {
-            //this.cst.addNode("AssignmentStatement");
             if (this.matchToken("T_ID", true)) 
                 if (this.matchToken("T_ASSIGNMENT_OP", true)) 
                     if (this.parseExpr()) {
@@ -120,7 +122,6 @@ module TSC {
 
         }
         public static parseVarDecl() {
-            //this.cst.addNode("VarDecl");
             // parse type
             if (this.matchToken("T_INT", true) || this.matchToken("T_BOOLEAN", true) || this.matchToken("T_STRING", true)) 
                 if (this.matchToken("T_ID", true)) {
@@ -233,7 +234,6 @@ module TSC {
                 return true;
         }
         public static matchToken(token, inStatementOrExpr) {
-            //console.log("token to match is " + token + " and current token is " + currentParseToken.type);
             if (token == "T_Char")
                 this.cst.addNode("Char");
             if (currentParseToken.type == token) {
@@ -253,10 +253,6 @@ module TSC {
                 return false;
             }
         }
-        /*public static buildCST(treantTree, cst) {
-            let child = {};
-            if (cst.)
-        }*/
             
     }
 }
