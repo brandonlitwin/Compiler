@@ -10,6 +10,7 @@ var TSC;
         }
         //static parsedAProgram: boolean = false;
         Parser.parse = function (tokenIndex, treantCST) {
+            this.treantCST = treantCST;
             this.currentParseTokenIndex = tokenIndex;
             errorText = "";
             this.parsetext = "Parsing program " + programCount + "...\n";
@@ -19,11 +20,13 @@ var TSC;
             if (this.parseProgram() && errorText == "") {
                 //this.parsedAProgram = true;
                 this.parsetext += "Parse of program " + programCount + " completed with no errors!\n";
+                console.log("node structure is " + this.treantCST['nodeStructure'].text);
+                this.treantCST = (this.cst.buildCST(this.treantCST['nodeStructure'], this.cst.root));
             }
             else {
                 errorText = "Found " + this.parseErrorCount + " parse errors";
             }
-            return [this.parsetext, this.currentParseTokenIndex, this.cst];
+            return [this.parsetext, this.currentParseTokenIndex, this.treantCST];
         };
         Parser.parseProgram = function () {
             this.cst = new TSC.Tree();
@@ -92,7 +95,7 @@ var TSC;
             }
         };
         Parser.parsePrintStatement = function () {
-            this.cst.addNode("PrintStatement");
+            //this.cst.addNode("PrintStatement");
             if (this.matchToken("T_PRINT", true))
                 if (this.matchToken("T_L_PAREN", true))
                     if (this.parseExpr())
@@ -103,7 +106,7 @@ var TSC;
             return false;
         };
         Parser.parseAssignmentStatement = function () {
-            this.cst.addNode("AssignmentStatement");
+            //this.cst.addNode("AssignmentStatement");
             if (this.matchToken("T_ID", true))
                 if (this.matchToken("T_ASSIGNMENT_OP", true))
                     if (this.parseExpr()) {
@@ -196,7 +199,7 @@ var TSC;
                 return false;
         };
         Parser.parseStringExpr = function () {
-            this.cst.addNode("StringExpression");
+            //this.cst.addNode("StringExpression");
             if (this.matchToken("T_QUOTE", true))
                 if (this.parseCharList())
                     if (this.matchToken("T_QUOTE", true)) {
@@ -206,7 +209,7 @@ var TSC;
             return false;
         };
         Parser.parseCharList = function () {
-            this.cst.addNode("CharList");
+            //this.cst.addNode("CharList");
             if (this.matchToken("T_Char", true)) {
                 if (this.parseCharList()) {
                     this.cst.moveUp();

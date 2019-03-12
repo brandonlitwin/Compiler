@@ -10,8 +10,10 @@ module TSC {
         static parseErrorCount: number = 0;
         static currentParseTokenIndex: number = 0;
         static cst: Tree = new Tree();
+        static treantCST;
         //static parsedAProgram: boolean = false;
         public static parse(tokenIndex, treantCST) {
+            this.treantCST = treantCST;
             this.currentParseTokenIndex = tokenIndex;
             errorText = "";
             this.parsetext = "Parsing program " + programCount + "...\n";
@@ -22,16 +24,19 @@ module TSC {
             if(this.parseProgram() && errorText == "") {
                 //this.parsedAProgram = true;
                 this.parsetext += "Parse of program " + programCount + " completed with no errors!\n";
+                console.log("node structure is " + this.treantCST['nodeStructure'].text);
+                this.treantCST = (this.cst.buildCST(this.treantCST['nodeStructure'], this.cst.root));
             } else {
                 errorText = "Found " + this.parseErrorCount + " parse errors";
             }
 
-            return [this.parsetext, this.currentParseTokenIndex, this.cst];
+            return [this.parsetext, this.currentParseTokenIndex, this.treantCST];
 
         }
         public static parseProgram() {
             this.cst = new Tree();
             this.cst.addNode("Program"+programCount);
+
             if (this.parseBlock(false)) {
                 if(!this.matchToken("T_EOP", false)) {
                     return false;
@@ -90,7 +95,7 @@ module TSC {
              }
         }
         public static parsePrintStatement() {
-            this.cst.addNode("PrintStatement");
+            //this.cst.addNode("PrintStatement");
             if (this.matchToken("T_PRINT", true)) 
                 if (this.matchToken("T_L_PAREN", true)) 
                     if (this.parseExpr()) 
@@ -102,7 +107,7 @@ module TSC {
             return false;
         }
         public static parseAssignmentStatement() {
-            this.cst.addNode("AssignmentStatement");
+            //this.cst.addNode("AssignmentStatement");
             if (this.matchToken("T_ID", true)) 
                 if (this.matchToken("T_ASSIGNMENT_OP", true)) 
                     if (this.parseExpr()) {
@@ -200,7 +205,7 @@ module TSC {
 
         }
         public static parseStringExpr() {
-            this.cst.addNode("StringExpression");
+            //this.cst.addNode("StringExpression");
             if (this.matchToken("T_QUOTE", true)) 
                 if (this.parseCharList()) 
                     if (this.matchToken("T_QUOTE", true)) {
@@ -211,7 +216,7 @@ module TSC {
             return false;
         }
         public static parseCharList() {
-            this.cst.addNode("CharList");
+            //this.cst.addNode("CharList");
             if (this.matchToken("T_Char", true)) {
                 if (this.parseCharList()) {
                     this.cst.moveUp();
@@ -247,7 +252,11 @@ module TSC {
                     
                 return false;
             }
-        } 
+        }
+        /*public static buildCST(treantTree, cst) {
+            let child = {};
+            if (cst.)
+        }*/
             
     }
 }

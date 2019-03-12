@@ -148,12 +148,16 @@ CMPT 432 - Compilers
 						parseresults = _Parser.parse(currentParseTokenIndex, treantCST);
 						putMessage(parseresults[0]);
 						currentParseTokenIndex = parseresults[1];
-						cst = parseresults[2];
-						var testcst = new Treant(simple_chart_config);
-						console.log(testcst);
-						//cst_visual = new Treant(cst);
-						//cst_visual = new Treant(treantCST);
-						//console.log(parseresults[2].toStringTree());
+						treantCSTStructure = parseresults[2];
+						console.log(treantCSTStructure);
+						var chart_config = {
+							chart: {
+								container: "#cst"
+							},
+							nodeStructure: treantCSTStructure
+						};
+						console.log(chart_config);
+						var visual_cst = new Treant(chart_config);
 						if (errorText != ""){
 							putMessage(errorText);
 						}

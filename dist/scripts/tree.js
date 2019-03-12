@@ -1,3 +1,10 @@
+/* tree.ts
+Brandon Litwin
+CMPT 432 - Compilers
+Project 2
+
+This is the tree object that stores all of the parsed tokens
+*/
 var TSC;
 (function (TSC) {
     var Tree = /** @class */ (function () {
@@ -13,22 +20,36 @@ var TSC;
                 this.currNode = node;
             }
             else {
-                //this.currNode = node;
-                console.log("node.value is " + node.value);
-                console.log("this.currNode is " + this.currNode.value);
                 node.parent = this.currNode;
                 this.currNode = node.parent;
                 this.currNode.children.push(node);
-                for (var i = 0; i < this.currNode.children.length; i++)
-                    console.log("this node's children are " + this.currNode.children[i].value);
-                console.log("done");
             }
         };
         Tree.prototype.moveUp = function () {
             // move up the tree
             if (this.currNode.parent != null)
                 this.currNode = this.currNode.parent;
-            //console.log(this.currNode.value.type);
+        };
+        Tree.prototype.buildCST = function (treantTree, node) {
+            var child = {};
+            if (node.value.type != undefined) {
+                child = {
+                    text: { name: "[" + node.value.value + "]" },
+                    children: []
+                };
+                treantTree.children.push(child);
+            }
+            else {
+                child = {
+                    text: { name: "<" + node.value + ">" },
+                    children: []
+                };
+                treantTree.children.push(child);
+            }
+            for (var i = 0; i < node.children.length; i++) {
+                this.buildCST(child, node.children[i]);
+            }
+            return treantTree;
         };
         Tree.prototype.toStringTree = function () {
             // print string representation of tree
