@@ -88,23 +88,6 @@ CMPT 432 - Compilers
 					]
 				}
 			};
-			/*var simple_chart_config = {
-				chart: {
-					container: "#cst"
-				},
-	
-				nodeStructure: {
-					text: { name: "Root" },
-					children: [
-							{
-								text: { name: "First child" }
-							},
-							{
-								text: { name: "Second child" }
-							}
-					]			
-				}
-			};*/
 			var config = {
 				container: "#cst"
 			};
@@ -149,18 +132,20 @@ CMPT 432 - Compilers
 						putMessage(parseresults[0]);
 						currentParseTokenIndex = parseresults[1];
 						treantCSTStructure = parseresults[2];
-						console.log(treantCSTStructure);
+						console.log("now error is " + errorText);
+						if (errorText != ""){
+							putMessage(errorText);
+							errorText = "";
+						} else {
+							putMessage("Compilation finished with no errors!\n");	
+						}
 						var chart_config = {
 							chart: {
 								container: "#cst"
 							},
 							nodeStructure: treantCSTStructure
 						};
-						console.log(chart_config);
 						var visual_cst = new Treant(chart_config);
-						if (errorText != ""){
-							putMessage(errorText);
-						}
 							
 						
 					}
@@ -169,14 +154,14 @@ CMPT 432 - Compilers
 			/*else {
 				_Lexer.lex();
 				_Parser.parse();
-			}*/
+			}
 			console.log(errorText);
 			if (warningText != "")
 				putMessage(warningText);
 			if (errorText != "")
 				putMessage(errorText);
 			else 
-				putMessage("Compilation finished with no errors!\n");	
+				putMessage("Compilation finished with no errors!\n");*/
 				
 	    }
     

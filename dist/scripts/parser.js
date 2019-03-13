@@ -19,7 +19,7 @@ var TSC;
                 this.treantCST = (this.cst.buildCST(this.treantCST['nodeStructure'], this.cst.root));
             }
             else {
-                errorText = "Found " + this.parseErrorCount + " parse errors";
+                errorText += "Found " + this.parseErrorCount + " parse errors";
             }
             return [this.parsetext, this.currentParseTokenIndex, this.treantCST];
         };
@@ -291,6 +291,7 @@ var TSC;
                     errorText = "Parse Error: Expected " + token + " and found " + currentParseToken.type + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
                     parseErrorFound = true;
                     this.parseErrorCount++;
+                    console.log(errorText);
                 }
                 return false;
             }
