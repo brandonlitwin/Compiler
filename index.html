@@ -28,6 +28,11 @@ CMPT 432 - Compilers
 				<input type="checkbox" id="verboseCheck" value="Verbose Mode" onclick="verboseModeSet()" checked/>
 				Verbose Mode
 			</div> 
+			<div>
+				<br><br>
+				<a href="Test Case Documentation/Lex_Test_Case_Documentation.pdf">Lex Test Cases</a><br><br><br>
+				<a href="Test Case Documentation/Parse_Test_Case_Documentation.pdf">Parse Test Cases</a><br><br>
+			</div>
 			<h2>Output</h2>
             <textarea id="taOutput"></textarea>
         </div>        
@@ -111,28 +116,22 @@ CMPT 432 - Compilers
 				first_child, second_child 
 			];
 			tokens = editor.getValue();
-			console.log(tokens);
 			if (verboseOn) {
 				while (currentTokenIndex < tokens.length - 1) {
-					console.log("current index is before lex " + currentTokenIndex);
 					lexresults = _Lexer.lex(currentTokenIndex);
 					putMessage(lexresults[0]);
 					currentTokenIndex = lexresults[1];
-					console.log("current index is after lex " + currentTokenIndex);
 					if (warningText != "") 
 						putMessage(warningText);
 					if (errorText != "") {
 						putMessage(errorText);
-						console.log(validLexedTokens);
 						validLexedTokens = [];
-						console.log(validLexedTokens);
 					}
 					else {
 						parseresults = _Parser.parse(currentParseTokenIndex, treantCST);
 						putMessage(parseresults[0]);
 						currentParseTokenIndex = parseresults[1];
 						treantCSTStructure = parseresults[2];
-						console.log("now error is " + errorText);
 						if (errorText != ""){
 							putMessage(errorText);
 							errorText = "";
@@ -151,17 +150,6 @@ CMPT 432 - Compilers
 					}
 				}
 			}
-			/*else {
-				_Lexer.lex();
-				_Parser.parse();
-			}
-			console.log(errorText);
-			if (warningText != "")
-				putMessage(warningText);
-			if (errorText != "")
-				putMessage(errorText);
-			else 
-				putMessage("Compilation finished with no errors!\n");*/
 				
 	    }
     

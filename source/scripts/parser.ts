@@ -107,7 +107,6 @@ module TSC {
                     //this.cst.moveUp();
                     if (this.parseExpr()) {
                         this.cst.moveUp();
-                        console.log(this.cst.currNode.value);
                     }
                         if (this.cst.currNode.value == "Expression") 
                         // look for Expr, and move it to child of PrintStatement
@@ -296,7 +295,6 @@ module TSC {
                     errorText = "Parse Error: Expected " + token + " and found " + currentParseToken.type + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
                     parseErrorFound = true;
                     this.parseErrorCount++;
-                    console.log(errorText);
                 }
                     
                 return false;
