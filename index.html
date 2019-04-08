@@ -17,7 +17,7 @@ CMPT 432 - Compilers
 	<script type="text/javascript" src="codemirror/js/jquery.min.js"></script>
 	<script type="text/javascript" src="codemirror/plugin/lib/codemirror.js"></script>
 	<!--script type="text/javascript" src="codemirror/js/default.js"></script-->
-	<h1>Project Two Compiler</h1>
+	<h1>Project Three Compiler</h1>
 
     <div>
         <div class="source">
@@ -39,6 +39,8 @@ CMPT 432 - Compilers
 	</div>
 	<h1>Visual CST</h1>
 	<div id="cst" style="width:100%; height:400px"></div>
+	<h1>Visual AST</h1>
+	<div id="ast" style="width:100%; height:400px"></div>
 	<script type="text/javascript" src="dist/Treant/Treant.js"></script>
 	<script type="text/javascript" src="dist/scripts/tree.js"></script>
 	<script type="text/javascript" src="dist/scripts/lexer.js"></script>	
@@ -60,6 +62,12 @@ CMPT 432 - Compilers
 			var cst_visual = new Treant({
 				chart: {
 					container: "#cst"
+				},
+				nodeStructure: {}
+			});
+			var ast_visual = new Treant({
+				chart: {
+					container: "#ast"
 				},
 				nodeStructure: {}
 			});
@@ -93,8 +101,22 @@ CMPT 432 - Compilers
 					]
 				}
 			};
+			var treantAST = {
+				chart: {
+					container: "#ast"
+				},
+				
+				nodeStructure: {
+					text: { name: "Root" },
+					children: [
+					]
+				}
+			};
 			var config = {
 				container: "#cst"
+			};
+			var config2 = {
+				container: "#ast"
 			};
 
 			var parent_node = {
@@ -111,8 +133,12 @@ CMPT 432 - Compilers
 				text: { name: "Second child" }
 			};
 
-			var simple_chart_config = [
+			var simple_cst_chart_config = [
 				config, parent_node,
+				first_child, second_child 
+			];
+			var simple_ast_chart_config = [
+				config2, parent_node,
 				first_child, second_child 
 			];
 			tokens = editor.getValue();
@@ -128,23 +154,31 @@ CMPT 432 - Compilers
 						validLexedTokens = [];
 					}
 					else {
-						parseresults = _Parser.parse(currentParseTokenIndex, treantCST);
+						parseresults = _Parser.parse(currentParseTokenIndex, treantCST, treantAST);
 						putMessage(parseresults[0]);
 						currentParseTokenIndex = parseresults[1];
 						treantCSTStructure = parseresults[2];
+						treantASTStructure = parseresults[3];
 						if (errorText != ""){
 							putMessage(errorText);
 							errorText = "";
 						} /*else {
 							putMessage("Compilation finished with no errors!\n");	
 						}*/
-						var chart_config = {
+						var cst_chart_config = {
 							chart: {
 								container: "#cst"
 							},
 							nodeStructure: treantCSTStructure
 						};
-						var visual_cst = new Treant(chart_config);
+						var visual_cst = new Treant(cst_chart_config);
+						var ast_chart_config = {
+							chart: {
+								container: "#ast"
+							},
+							nodeStructure: treantASTStructure
+						};
+						var visual_ast = new Treant(ast_chart_config);
 							
 						
 					}

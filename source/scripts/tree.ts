@@ -79,6 +79,28 @@ module TSC {
             return treantTree;
 
         }
+        public buildAST(treantTree, node) {
+            let child = {};
+            
+            if (node.value.type != undefined) {
+                child = {
+                    text: { name: node.value.value },
+                    children: []
+                };
+                treantTree.children.push(child);
+            } else {
+                child = {
+                    text: { name: node.value },
+                    children: []
+                };
+                treantTree.children.push(child);
+            }
+            for (var i = 0; i < node.children.length; i++) {
+                this.buildAST(child, node.children[i]);
+            }
+            return treantTree;
+
+        }
 
         public toStringTree() {
             // print string representation of tree

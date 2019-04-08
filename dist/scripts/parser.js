@@ -8,9 +8,10 @@ var TSC;
     var Parser = /** @class */ (function () {
         function Parser() {
         }
-        Parser.parse = function (tokenIndex, treantCST) {
+        Parser.parse = function (tokenIndex, treantCST, treantAST) {
             parseErrorFound = false;
             this.treantCST = treantCST;
+            this.treantAST = treantAST;
             this.currentParseTokenIndex = tokenIndex;
             errorText = "";
             this.parsetext = "Parsing program " + programCount + "...\n";
@@ -18,6 +19,7 @@ var TSC;
             if (this.parseProgram() && errorText == "") {
                 this.parsetext += "Parse of program " + programCount + " completed with no errors!\n";
                 this.treantCST = (this.cst.buildCST(this.treantCST['nodeStructure'], this.cst.root));
+                this.treantAST = (this.ast.buildAST(this.treantAST['nodeStructure'], this.ast.root));
             }
             else {
                 errorText += "Found " + this.parseErrorCount + " parse errors";
@@ -27,10 +29,11 @@ var TSC;
                 }
                 this.currentParseTokenIndex++;
             }
-            return [this.parsetext, this.currentParseTokenIndex, this.treantCST];
+            return [this.parsetext, this.currentParseTokenIndex, this.treantCST, this.treantAST];
         };
         Parser.parseProgram = function () {
             this.cst = new TSC.Tree();
+            this.ast = new TSC.Tree();
             this.cst.addNode("Program" + programCount);
             if (this.parseBlock(false)) {
                 if (!this.matchToken("T_EOP", false)) {
@@ -50,6 +53,8 @@ var TSC;
         };
         Parser.parseBlock = function (inStatementOrExpr) {
             this.cst.addNode("Block");
+            if (!inStatementOrExpr)
+                this.ast.addNode("Block(Program" + programCount + ")");
             if (!this.matchToken("T_L_BRACE", inStatementOrExpr)) {
                 return false;
             }
@@ -280,32 +285,44 @@ var TSC;
             console.log(currentParseToken);
             if (currentParseToken.type == token) {
                 if (currentParseToken.type == "T_Char") {
-                    console.log("here");
                     this.cst.addNode("CharList");
                     this.cst.addNode("Char");
                 }
-                else if (currentParseToken.type == "T_PRINT")
+                else if (currentParseToken.type == "T_PRINT") {
                     this.cst.addNode("PrintStatement");
-                else if (currentParseToken.type == "T_WHILE")
+                    this.ast.addNode("PrintStatement");
+                }
+                else if (currentParseToken.type == "T_WHILE") {
                     this.cst.addNode("WhileStatement");
-                else if (currentParseToken.type == "T_IF")
+                    this.ast.addNode("WhileStatement");
+                }
+                else if (currentParseToken.type == "T_IF") {
                     this.cst.addNode("IfStatement");
+                    this.ast.addNode("IfStatement");
+                }
                 else if (currentParseToken.type == "T_INT" || currentParseToken.type == "T_BOOLEAN" || currentParseToken.type == "T_STRING") {
                     this.cst.addNode("VarDecl");
                     this.cst.addNode("Type");
+                    this.ast.addNode("VarDecl");
                 }
-                else if (currentParseToken.type == "L_PAREN")
+                else if (currentParseToken.type == "L_PAREN") {
                     this.cst.addNode("BooleanExpr");
-                else if (currentParseToken.type == "T_ADDITION_OP")
+                }
+                else if (currentParseToken.type == "T_ADDITION_OP") {
                     this.cst.addNode("IntOp");
+                    this.ast.addNode("Addition");
+                }
                 else if (currentParseToken.type == "T_DIGIT") {
                     this.cst.addNode("IntExpr");
                     this.cst.addNode("Digit");
                 }
-                else if (currentParseToken.type == "T_QUOTE")
+                else if (currentParseToken.type == "T_QUOTE") {
                     this.cst.addNode("StringExpr");
+                }
                 this.parsetext += "Expected " + token + " and found " + currentParseToken.type + " [" + currentParseToken.value + "] at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
                 this.cst.addNode(currentParseToken);
+                if (currentParseToken.type == "T_DIGIT" || currentParseToken.type == "T_ID")
+                    this.ast.addNode(currentParseToken);
                 this.currentParseTokenIndex++;
                 if (this.currentParseTokenIndex < validLexedTokens.length)
                     currentParseToken = validLexedTokens[this.currentParseTokenIndex];
@@ -323,6 +340,7 @@ var TSC;
         Parser.parseErrorCount = 0;
         Parser.currentParseTokenIndex = 0;
         Parser.cst = new TSC.Tree();
+        Parser.ast = new TSC.Tree();
         return Parser;
     }());
     TSC.Parser = Parser;

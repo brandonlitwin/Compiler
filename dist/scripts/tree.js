@@ -71,6 +71,27 @@ var TSC;
             }
             return treantTree;
         };
+        Tree.prototype.buildAST = function (treantTree, node) {
+            var child = {};
+            if (node.value.type != undefined) {
+                child = {
+                    text: { name: node.value.value },
+                    children: []
+                };
+                treantTree.children.push(child);
+            }
+            else {
+                child = {
+                    text: { name: node.value },
+                    children: []
+                };
+                treantTree.children.push(child);
+            }
+            for (var i = 0; i < node.children.length; i++) {
+                this.buildAST(child, node.children[i]);
+            }
+            return treantTree;
+        };
         Tree.prototype.toStringTree = function () {
             // print string representation of tree
             var traversalResult = "";
