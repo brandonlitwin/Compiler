@@ -108,48 +108,53 @@ var TSC;
             }
         };
         Parser.parsePrintStatement = function () {
-            if (this.matchToken("T_PRINT", true))
+            if (this.matchToken("T_PRINT", true)) {
                 this.cst.moveUp();
-            if (this.matchToken("T_L_PAREN", true))
-                //this.cst.moveUp();
-                if (this.parseExpr()) {
-                    this.cst.moveUp();
-                }
-            if (this.cst.currNode.value == "Expression")
-                // look for Expr, and move it to child of PrintStatement
-                this.cst.makeNodeChildOf(this.cst.currNode, "PrintStatement");
-            if (this.matchToken("T_R_PAREN", true)) {
-                //this.cst.moveUp();
-                if (this.cst.currNode.value.type == "T_R_PAREN") {
+                if (this.matchToken("T_L_PAREN", false))
+                    //this.cst.moveUp();
+                    if (this.parseExpr()) {
+                        this.cst.moveUp();
+                    }
+                if (this.cst.currNode.value == "Expression")
+                    // look for Expr, and move it to child of PrintStatement
                     this.cst.makeNodeChildOf(this.cst.currNode, "PrintStatement");
+                if (this.matchToken("T_R_PAREN", false)) {
+                    //this.cst.moveUp();
+                    if (this.cst.currNode.value.type == "T_R_PAREN") {
+                        this.cst.makeNodeChildOf(this.cst.currNode, "PrintStatement");
+                    }
+                    //this.cst.moveUp();
+                    return true;
                 }
-                //this.cst.moveUp();
-                return true;
             }
             return false;
         };
         Parser.parseAssignmentStatement = function () {
-            if (this.matchToken("T_ID", true))
+            if (this.matchToken("T_ID", true)) {
                 this.cst.addNode("AssignmentStatement");
-            this.cst.addNode("Id");
-            //this.cst.moveUp();
-            //this.cst.addNode("AssignmentStatement");
-            if (this.matchToken("T_ASSIGNMENT_OP", true))
-                if (this.parseExpr()) {
-                    this.parsetext += "Parsed Assignment Statement at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    this.cst.moveUp();
-                    return true;
-                }
+                this.cst.addNode("Id");
+                //this.cst.moveUp();
+                //this.cst.addNode("AssignmentStatement");
+                if (this.matchToken("T_ASSIGNMENT_OP", false))
+                    if (this.parseExpr()) {
+                        this.parsetext += "Parsed Assignment Statement at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+                        this.cst.moveUp();
+                        return true;
+                    }
+            }
             return false;
         };
         Parser.parseVarDecl = function () {
             // parse type
-            if (this.matchToken("T_INT", true) || this.matchToken("T_BOOLEAN", true) || this.matchToken("T_STRING", true))
+            if (this.matchToken("T_INT", true) || this.matchToken("T_BOOLEAN", true) || this.matchToken("T_STRING", true)) {
+                console.log("found var decl");
                 this.cst.moveUp();
-            this.cst.addNode("Id");
-            if (this.matchToken("T_ID", true)) {
                 this.cst.moveUp();
-                return true;
+                this.cst.addNode("Id");
+                if (this.matchToken("T_ID", false)) {
+                    this.cst.moveUp();
+                    return true;
+                }
             }
             return false;
         };
@@ -191,9 +196,9 @@ var TSC;
             //this.cst.addNode("BooleanExpression");
             if (this.matchToken("T_L_PAREN", true)) {
                 if (this.parseExpr())
-                    if (this.matchToken("T_EQUALS", true) || this.matchToken("T_NOT_EQUAL", true))
+                    if (this.matchToken("T_EQUALS", false) || this.matchToken("T_NOT_EQUAL", false))
                         if (this.parseExpr())
-                            if (this.matchToken("T_R_PAREN", true)) {
+                            if (this.matchToken("T_R_PAREN", false)) {
                                 this.parsetext += "Parsed Boolean Expression at line " + (currentParseToken.lineNumber) + " index " + currentParseToken.index + "\n";
                                 this.cst.moveUp();
                                 return true;
@@ -239,7 +244,7 @@ var TSC;
                 this.cst.makeNodeChildOf(this.cst.currNode, "StringExpr");
             if (this.parseCharList())
                 //this.cst.moveUp();
-                if (this.matchToken("T_QUOTE", true)) {
+                if (this.matchToken("T_QUOTE", false)) {
                     //this.cst.moveUp();
                     if (this.cst.currNode.value.type == "T_QUOTE")
                         this.cst.makeNodeChildOf(this.cst.currNode, "Expression");
@@ -270,6 +275,7 @@ var TSC;
                 return true;
         };
         Parser.matchToken = function (token, inStatementOrExpr) {
+            console.log("Matching token");
             console.log(token);
             console.log(currentParseToken);
             if (currentParseToken.type == token) {
