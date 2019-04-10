@@ -140,13 +140,17 @@ module TSC {
         public static parseAssignmentStatement() {
             if (this.matchToken("T_ID", true)) {
                 this.cst.addNode("AssignmentStatement");
+                this.ast.addNode("AssignmentStatement");
                 this.cst.addNode("Id"); 
-                //this.cst.moveUp();
-                //this.cst.addNode("AssignmentStatement");
+                this.ast.makeNodeChildOf(this.ast.currNode, "Block(Program"+programCount+")");
+                this.ast.moveDown();
+                this.ast.addNode(validLexedTokens[(this.currentParseTokenIndex-2)].value);
                 if (this.matchToken("T_ASSIGNMENT_OP", false)) 
+                    this.ast.moveUp();
                     if (this.parseExpr()) {
                         this.parsetext += "Parsed Assignment Statement at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n"; 
                         this.cst.moveUp();
+                        this.ast.moveUp();
                         return true;
                     } 
             }
@@ -156,11 +160,13 @@ module TSC {
         public static parseVarDecl() {
             // parse type
             if (this.matchToken("T_INT", true) || this.matchToken("T_BOOLEAN", true) || this.matchToken("T_STRING", true)) {
-                console.log("found var decl")
+                console.log("found var decl");
                 this.cst.moveUp();
                 this.cst.moveUp();
+                this.ast.moveUp();
                 this.cst.addNode("Id");
                 if (this.matchToken("T_ID", false)) {
+                    this.ast.addNode(validLexedTokens[this.currentParseTokenIndex].value);
                     this.cst.moveUp();
                     return true;
                 }
@@ -181,11 +187,14 @@ module TSC {
         }
         public static parseIfStatement() {
             //this.cst.addNode("IfStatement");
-            if (this.matchToken("T_IF", true)) 
+            if (this.matchToken("T_IF", true))
                 //this.cst.moveUp();
                 if (this.parseBooleanExpr()) 
-                    //this.cst.moveUp();
+                    this.ast.addNode("Block");
+                    //this.ast.moveUp();
+                    //this.ast.makeNodeChildOf(this.ast.currNode, "Block");
                     if(this.parseBlock(true)) {
+                        //this.ast.addNode("Block");
                         this.cst.moveUp();
                         return true;
                     }
@@ -194,6 +203,7 @@ module TSC {
         }
         public static parseExpr() {
             //this.cst.moveUp();
+            //this.ast.moveUp();
             this.cst.addNode("Expression");
             if (this.parseIntExpr() || this.parseBooleanExpr() || this.parseStringExpr() || this.matchToken("T_ID", false)) {
                 this.cst.moveUp();
@@ -206,7 +216,9 @@ module TSC {
             //this.cst.addNode("BooleanExpression");
             if (this.matchToken("T_L_PAREN", true)) {
                 if (this.parseExpr()) 
+                    //this.ast.moveUp();
                     if (this.matchToken("T_EQUALS", false) || this.matchToken("T_NOT_EQUAL", false)) 
+                        //this.ast.makeNodeChildOf(this.cst.currNode, "IfStatement");
                         if (this.parseExpr()) 
                             if (this.matchToken("T_R_PAREN", false)) {
                                 this.parsetext += "Parsed Boolean Expression at line " + (currentParseToken.lineNumber) + " index " + currentParseToken.index + "\n";
@@ -225,6 +237,8 @@ module TSC {
         public static parseIntExpr() {
             //this.cst.addNode("IntExpression");
             if (this.matchToken("T_DIGIT", true)) {
+                //this.ast.moveUp();
+                this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-1].value);
                 this.cst.moveUp();
                 if (this.matchToken("T_ADDITION_OP", true)) {
                     if (this.parseExpr()) {
@@ -301,12 +315,16 @@ module TSC {
                     this.cst.addNode("WhileStatement");
                     this.ast.addNode("WhileStatement");
                 } else if (currentParseToken.type == "T_IF") {
+                    this.ast.moveUp();
+                    this.ast.moveUp();
                     this.cst.addNode("IfStatement");
                     this.ast.addNode("IfStatement");
+                    //this.ast.addNode("Block");
                 } else if (currentParseToken.type == "T_INT" || currentParseToken.type == "T_BOOLEAN" || currentParseToken.type == "T_STRING") {
                     this.cst.addNode("VarDecl");
                     this.cst.addNode("Type");
                     this.ast.addNode("VarDecl");
+                    this.ast.addNode(currentParseToken.value);
                 } else if (currentParseToken.type == "L_PAREN") {
                     this.cst.addNode("BooleanExpr");
                 } else if (currentParseToken.type == "T_ADDITION_OP") {
@@ -317,11 +335,13 @@ module TSC {
                     this.cst.addNode("Digit");
                 } else if (currentParseToken.type == "T_QUOTE") {
                     this.cst.addNode("StringExpr");
+                } else if (currentParseToken.type == "T_EQUALS" || currentParseToken.type == "T_NOT_EQUAL") {
+                    this.ast.addNode(currentParseToken.type);
                 }
                 this.parsetext += "Expected " + token + " and found " + currentParseToken.type + " [" + currentParseToken.value + "] at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
                 this.cst.addNode(currentParseToken);
-                if (currentParseToken.type == "T_DIGIT" || currentParseToken.type == "T_ID")
-                    this.ast.addNode(currentParseToken);
+                //if (currentParseToken.type == "T_DIGIT" || currentParseToken.type == "T_ID")
+                    //this.ast.addNode(currentParseToken);
                 this.currentParseTokenIndex++;
                 if (this.currentParseTokenIndex < validLexedTokens.length)
                     currentParseToken = validLexedTokens[this.currentParseTokenIndex];
