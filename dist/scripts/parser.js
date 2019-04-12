@@ -62,6 +62,8 @@ var TSC;
                 this.cst.addNode("Block");
                 if (!inStatementOrExpr)
                     this.ast.addNode("Block(Program" + programCount + ")");
+                else
+                    this.ast.addNode("Block");
                 this.cst.moveUp();
                 if (this.parseStatementList()) {
                     this.cst.moveUp();
@@ -133,7 +135,9 @@ var TSC;
                 if (this.matchToken("T_L_PAREN", false))
                     //this.cst.moveUp();
                     if (this.parseExpr()) {
+                        this.ast.addNode(validLexedTokens[this.currentParseTokenIndex - 1].value);
                         this.cst.moveUp();
+                        this.ast.moveUp();
                     }
                 if (this.cst.currNode.value == "Expression")
                     // look for Expr, and move it to child of PrintStatement
@@ -155,8 +159,6 @@ var TSC;
                 this.cst.addNode("AssignmentStatement");
                 this.ast.addNode("AssignmentStatement");
                 this.cst.addNode("Id");
-                this.ast.makeNodeChildOf(this.ast.currNode, "Block(Program" + programCount + ")");
-                this.ast.moveDown();
                 this.ast.addNode(validLexedTokens[(this.currentParseTokenIndex - 1)].value);
                 if (this.matchToken("T_ASSIGNMENT_OP", false))
                     this.ast.moveUp();
@@ -181,7 +183,7 @@ var TSC;
                     this.ast.addNode(validLexedTokens[this.currentParseTokenIndex - 1].value);
                     this.cst.moveUp();
                     this.ast.moveUp();
-                    this.ast.makeNodeChildOf(this.ast.currNode, "Block(Program" + programCount + ")");
+                    //this.ast.makeNodeChildOf(this.ast.currNode, "Block(Program"+programCount+")");
                     return true;
                 }
             }
@@ -192,6 +194,7 @@ var TSC;
             if (this.matchToken("T_WHILE", true))
                 if (this.parseBooleanExpr()) {
                     if (this.parseBlock(true)) {
+                        this.ast.moveUp();
                         this.cst.moveUp();
                         return true;
                     }
@@ -203,12 +206,11 @@ var TSC;
             if (this.matchToken("T_IF", true)) {
                 //this.cst.moveUp();
                 if (this.parseBooleanExpr()) {
-                    this.ast.addNode("Block");
                     //this.ast.moveUp();
                     if (this.parseBlock(true)) {
                         //this.ast.addNode("Block");
                         this.ast.moveUp();
-                        this.ast.makeNodeChildOf(this.ast.currNode, "IfStatement");
+                        //this.ast.makeNodeChildOf(this.ast.currNode, "IfStatement");
                         this.cst.moveUp();
                         return true;
                     }
@@ -231,16 +233,23 @@ var TSC;
         Parser.parseBooleanExpr = function () {
             //this.cst.addNode("BooleanExpression");
             if (this.matchToken("T_L_PAREN", true)) {
-                if (this.parseExpr())
-                    this.ast.moveUp();
-                if (this.matchToken("T_EQUALS", false) || this.matchToken("T_NOT_EQUAL", false))
-                    //this.ast.makeNodeChildOf(this.cst.currNode, "IfStatement");
-                    if (this.parseExpr())
-                        if (this.matchToken("T_R_PAREN", false)) {
-                            this.parsetext += "Parsed Boolean Expression at line " + (currentParseToken.lineNumber) + " index " + currentParseToken.index + "\n";
-                            this.cst.moveUp();
-                            return true;
+                if (this.parseExpr()) {
+                    //this.ast.moveUp();
+                    if (this.matchToken("T_EQUALS", false) || this.matchToken("T_NOT_EQUAL", false)) {
+                        this.ast.addNode(validLexedTokens[this.currentParseTokenIndex - 2].value);
+                        this.ast.moveUp();
+                        //this.ast.makeNodeChildOf(this.cst.currNode, "IfStatement");
+                        if (this.parseExpr()) {
+                            if (this.matchToken("T_R_PAREN", false)) {
+                                this.parsetext += "Parsed Boolean Expression at line " + (currentParseToken.lineNumber) + " index " + currentParseToken.index + "\n";
+                                this.cst.moveUp();
+                                this.ast.moveUp();
+                                this.ast.moveUp();
+                                return true;
+                            }
                         }
+                    }
+                }
                 return false;
             }
             else {
@@ -254,7 +263,6 @@ var TSC;
         Parser.parseIntExpr = function () {
             //this.cst.addNode("IntExpression");
             if (this.matchToken("T_DIGIT", true)) {
-                //this.ast.moveUp();
                 this.ast.addNode(validLexedTokens[this.currentParseTokenIndex - 1].value);
                 this.cst.moveUp();
                 if (this.matchToken("T_ADDITION_OP", true)) {
@@ -319,9 +327,6 @@ var TSC;
                 return true;
         };
         Parser.matchToken = function (token, inStatementOrExpr) {
-            //console.log("Matching token");
-            //console.log(token);
-            //console.log(currentParseToken);
             if (currentParseToken.type == token) {
                 if (currentParseToken.type == "T_Char") {
                     this.cst.addNode("CharList");
@@ -336,11 +341,8 @@ var TSC;
                     this.ast.addNode("WhileStatement");
                 }
                 else if (currentParseToken.type == "T_IF") {
-                    this.ast.moveUp();
-                    this.ast.moveUp();
                     this.cst.addNode("IfStatement");
                     this.ast.addNode("IfStatement");
-                    //this.ast.addNode("Block");
                 }
                 else if (currentParseToken.type == "T_INT" || currentParseToken.type == "T_BOOLEAN" || currentParseToken.type == "T_STRING") {
                     this.cst.addNode("VarDecl");
