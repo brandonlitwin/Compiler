@@ -36,6 +36,7 @@ var TSC;
             this.ast = new TSC.Tree();
             this.cst.addNode("Program" + programCount);
             if (this.parseBlock(false)) {
+                console.log("Parsed that block");
                 if (!this.matchToken("T_EOP", false)) {
                     return false;
                 }
@@ -52,21 +53,22 @@ var TSC;
             }
         };
         Parser.parseBlock = function (inStatementOrExpr) {
-            this.cst.addNode("Block");
-            if (!inStatementOrExpr)
-                this.ast.addNode("Block(Program" + programCount + ")");
+            console.log("parse block");
             if (!this.matchToken("T_L_BRACE", inStatementOrExpr)) {
+                console.log("Couldn't parse block: no L Brace");
                 return false;
             }
             else {
+                this.cst.addNode("Block");
+                if (!inStatementOrExpr)
+                    this.ast.addNode("Block(Program" + programCount + ")");
                 this.cst.moveUp();
                 if (this.parseStatementList()) {
                     this.cst.moveUp();
                     if (this.matchToken("T_R_BRACE", inStatementOrExpr)) {
-                        if (this.cst.currNode.value.type == "T_R_BRACE") {
-                            // look for }, and move it to child of StatementList
-                            this.cst.makeNodeChildOf(this.cst.currNode, "Block");
-                        }
+                        console.log("Made it passed R BRACE");
+                        console.log(currentParseToken.type);
+                        console.log("Over here");
                         return true;
                     }
                     else {
@@ -74,29 +76,40 @@ var TSC;
                     }
                 }
                 else {
+                    console.log("big chuppppss");
                     return false;
                 }
             }
         };
         Parser.parseStatementList = function () {
+            console.log("Inside ParseStatementList");
             this.cst.addNode("StatementList");
             if (this.parseStatement()) {
+                console.log("Parse Statement");
                 this.cst.moveUp();
                 //this.cst.moveUp();
                 if (this.parseStatementList()) {
+                    console.log("Parse StatementList");
                     this.cst.moveUp();
                     return true;
                 }
             }
             else {
                 // an empty statement is also valid
+                console.log("Couldn't Parse Statement");
                 if (!parseErrorFound) {
+                    console.log("Empty Statement");
+                    this.parsetext += "Parsed \u03B5 at line " + (currentParseToken.lineNumber - 1) + " index " + currentParseToken.index + "\n";
+                    console.log("Parsed \u03B5 at line " + (currentParseToken.lineNumber - 1) + " index " + currentParseToken.index + "\n");
                     this.cst.addNode("\u03B5");
                     this.cst.moveUp();
                     this.cst.moveUp();
                     return true;
                 }
                 else {
+                    console.log("Statement Error");
+                    console.log("Error Found?" + parseErrorFound);
+                    console.log(errorText);
                     return false;
                 }
             }
@@ -106,6 +119,8 @@ var TSC;
             if (this.parsePrintStatement() || this.parseAssignmentStatement() || this.parseVarDecl() ||
                 this.parseWhileStatement() || this.parseIfStatement() || this.parseBlock(true)) {
                 this.cst.moveUp();
+                this.ast.moveUp();
+                console.log("got something here boss");
                 return true;
             }
             else {
@@ -127,6 +142,7 @@ var TSC;
                     //this.cst.moveUp();
                     if (this.cst.currNode.value.type == "T_R_PAREN") {
                         this.cst.makeNodeChildOf(this.cst.currNode, "PrintStatement");
+                        this.parsetext += "Parsed Print Statement at line " + (currentParseToken.lineNumber - 1) + " index " + currentParseToken.index + "\n";
                     }
                     //this.cst.moveUp();
                     return true;
@@ -141,11 +157,11 @@ var TSC;
                 this.cst.addNode("Id");
                 this.ast.makeNodeChildOf(this.ast.currNode, "Block(Program" + programCount + ")");
                 this.ast.moveDown();
-                this.ast.addNode(validLexedTokens[(this.currentParseTokenIndex - 2)].value);
+                this.ast.addNode(validLexedTokens[(this.currentParseTokenIndex - 1)].value);
                 if (this.matchToken("T_ASSIGNMENT_OP", false))
                     this.ast.moveUp();
                 if (this.parseExpr()) {
-                    this.parsetext += "Parsed Assignment Statement at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+                    this.parsetext += "Parsed Assignment Statement at line " + (currentParseToken.lineNumber - 1) + " index " + currentParseToken.index + "\n";
                     this.cst.moveUp();
                     this.ast.moveUp();
                     return true;
@@ -162,8 +178,10 @@ var TSC;
                 this.ast.moveUp();
                 this.cst.addNode("Id");
                 if (this.matchToken("T_ID", false)) {
-                    this.ast.addNode(validLexedTokens[this.currentParseTokenIndex].value);
+                    this.ast.addNode(validLexedTokens[this.currentParseTokenIndex - 1].value);
                     this.cst.moveUp();
+                    this.ast.moveUp();
+                    this.ast.makeNodeChildOf(this.ast.currNode, "Block(Program" + programCount + ")");
                     return true;
                 }
             }
@@ -182,16 +200,19 @@ var TSC;
         };
         Parser.parseIfStatement = function () {
             //this.cst.addNode("IfStatement");
-            if (this.matchToken("T_IF", true))
+            if (this.matchToken("T_IF", true)) {
                 //this.cst.moveUp();
-                if (this.parseBooleanExpr())
+                if (this.parseBooleanExpr()) {
                     this.ast.addNode("Block");
-            //this.ast.moveUp();
-            //this.ast.makeNodeChildOf(this.ast.currNode, "Block");
-            if (this.parseBlock(true)) {
-                //this.ast.addNode("Block");
-                this.cst.moveUp();
-                return true;
+                    //this.ast.moveUp();
+                    if (this.parseBlock(true)) {
+                        //this.ast.addNode("Block");
+                        this.ast.moveUp();
+                        this.ast.makeNodeChildOf(this.ast.currNode, "IfStatement");
+                        this.cst.moveUp();
+                        return true;
+                    }
+                }
             }
             return false;
         };
@@ -211,15 +232,15 @@ var TSC;
             //this.cst.addNode("BooleanExpression");
             if (this.matchToken("T_L_PAREN", true)) {
                 if (this.parseExpr())
-                    //this.ast.moveUp();
-                    if (this.matchToken("T_EQUALS", false) || this.matchToken("T_NOT_EQUAL", false))
-                        //this.ast.makeNodeChildOf(this.cst.currNode, "IfStatement");
-                        if (this.parseExpr())
-                            if (this.matchToken("T_R_PAREN", false)) {
-                                this.parsetext += "Parsed Boolean Expression at line " + (currentParseToken.lineNumber) + " index " + currentParseToken.index + "\n";
-                                this.cst.moveUp();
-                                return true;
-                            }
+                    this.ast.moveUp();
+                if (this.matchToken("T_EQUALS", false) || this.matchToken("T_NOT_EQUAL", false))
+                    //this.ast.makeNodeChildOf(this.cst.currNode, "IfStatement");
+                    if (this.parseExpr())
+                        if (this.matchToken("T_R_PAREN", false)) {
+                            this.parsetext += "Parsed Boolean Expression at line " + (currentParseToken.lineNumber) + " index " + currentParseToken.index + "\n";
+                            this.cst.moveUp();
+                            return true;
+                        }
                 return false;
             }
             else {
@@ -257,27 +278,31 @@ var TSC;
         };
         Parser.parseStringExpr = function () {
             //this.cst.addNode("StringExpression");
-            if (this.matchToken("T_QUOTE", true))
+            if (this.matchToken("T_QUOTE", true)) {
                 this.cst.moveUp();
-            if (this.cst.currNode.value.type == "T_QUOTE")
-                this.cst.makeNodeChildOf(this.cst.currNode, "StringExpr");
-            if (this.parseCharList())
-                //this.cst.moveUp();
-                if (this.matchToken("T_QUOTE", false)) {
+                if (this.cst.currNode.value.type == "T_QUOTE")
+                    this.cst.makeNodeChildOf(this.cst.currNode, "StringExpr");
+                if (this.parseCharList()) {
                     //this.cst.moveUp();
-                    if (this.cst.currNode.value.type == "T_QUOTE")
-                        this.cst.makeNodeChildOf(this.cst.currNode, "Expression");
-                    return true;
+                    if (this.matchToken("T_QUOTE", false)) {
+                        //this.cst.moveUp();
+                        if (this.cst.currNode.value.type == "T_QUOTE")
+                            this.cst.makeNodeChildOf(this.cst.currNode, "Expression");
+                        return true;
+                    }
                 }
-            return false;
+            }
+            else
+                return false;
         };
         Parser.parseCharList = function () {
             //this.cst.addNode("CharList");
             if (this.matchToken("T_Char", true)) {
                 this.cst.moveUp();
-                if (this.cst.currNode.value == "CharList")
+                if (this.cst.currNode.value == "CharList") {
                     this.cst.moveUp();
-                this.cst.makeNodeChildOf(this.cst.currNode, "CharList");
+                    this.cst.makeNodeChildOf(this.cst.currNode, "CharList");
+                }
                 if (this.parseCharList()) {
                     this.cst.moveUp();
                     return true;
@@ -294,9 +319,9 @@ var TSC;
                 return true;
         };
         Parser.matchToken = function (token, inStatementOrExpr) {
-            console.log("Matching token");
-            console.log(token);
-            console.log(currentParseToken);
+            //console.log("Matching token");
+            //console.log(token);
+            //console.log(currentParseToken);
             if (currentParseToken.type == token) {
                 if (currentParseToken.type == "T_Char") {
                     this.cst.addNode("CharList");
@@ -341,6 +366,7 @@ var TSC;
                     this.ast.addNode(currentParseToken.type);
                 }
                 this.parsetext += "Expected " + token + " and found " + currentParseToken.type + " [" + currentParseToken.value + "] at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+                console.log("Expected " + token + " and found " + currentParseToken.type + " [" + currentParseToken.value + "] at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n");
                 this.cst.addNode(currentParseToken);
                 //if (currentParseToken.type == "T_DIGIT" || currentParseToken.type == "T_ID")
                 //this.ast.addNode(currentParseToken);
@@ -350,8 +376,10 @@ var TSC;
                 return true;
             }
             else {
-                if (!parseErrorFound && !inStatementOrExpr) {
+                if (!parseErrorFound && !inStatementOrExpr && currentParseToken.type != "T_R_BRACE") {
+                    console.log("There seems to be an error");
                     errorText = "Parse Error: Expected " + token + " and found " + currentParseToken.type + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
+                    console.log(errorText);
                     parseErrorFound = true;
                     this.parseErrorCount++;
                 }
