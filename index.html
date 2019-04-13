@@ -45,6 +45,7 @@ CMPT 432 - Compilers
 	<script type="text/javascript" src="dist/scripts/tree.js"></script>
 	<script type="text/javascript" src="dist/scripts/lexer.js"></script>	
 	<script type="text/javascript" src="dist/scripts/parser.js"></script>
+	<script type="text/javascript" src="dist/scripts/semanticsAnalyzer.js"></script>
 	<script type="text/javascript" src="dist/scripts/globals.js"></script>	
 	<script type="text/javascript" src="dist/scripts/token.js"></script>
 	<script type="text/javascript" src="dist/Treant/vendor/raphael.js"></script>
@@ -143,6 +144,7 @@ CMPT 432 - Compilers
 			];
 			tokens = editor.getValue();
 			if (verboseOn) {
+				// Lexer
 				while (currentTokenIndex < tokens.length - 1) {
 					lexresults = _Lexer.lex(currentTokenIndex);
 					putMessage(lexresults[0]);
@@ -154,31 +156,35 @@ CMPT 432 - Compilers
 						validLexedTokens = [];
 					}
 					else {
+						// No Lex errors, move to Parser
 						parseresults = _Parser.parse(currentParseTokenIndex, treantCST, treantAST);
 						putMessage(parseresults[0]);
 						currentParseTokenIndex = parseresults[1];
 						treantCSTStructure = parseresults[2];
 						treantASTStructure = parseresults[3];
+						ASTStructure = parseresults[4];
 						if (errorText != ""){
 							putMessage(errorText);
 							errorText = "";
-						} /*else {
-							putMessage("Compilation finished with no errors!\n");	
-						}*/
-						var cst_chart_config = {
-							chart: {
-								container: "#cst"
-							},
-							nodeStructure: treantCSTStructure
-						};
-						var visual_cst = new Treant(cst_chart_config);
-						var ast_chart_config = {
-							chart: {
-								container: "#ast"
-							},
-							nodeStructure: treantASTStructure
-						};
-						var visual_ast = new Treant(ast_chart_config);
+						} else {
+							// No Parse errors, display CST and AST and do Semantics
+							var cst_chart_config = {
+								chart: {
+									container: "#cst"
+								},
+								nodeStructure: treantCSTStructure
+							};
+							var visual_cst = new Treant(cst_chart_config);
+							var ast_chart_config = {
+								chart: {
+									container: "#ast"
+								},
+								nodeStructure: treantASTStructure
+							};
+							var visual_ast = new Treant(ast_chart_config);
+							semanticresults = _SemanticsAnalyzer.analyze(ASTStructure);
+						}
+						
 							
 						
 					}

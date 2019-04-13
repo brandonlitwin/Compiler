@@ -29,14 +29,13 @@ var TSC;
                 }
                 this.currentParseTokenIndex++;
             }
-            return [this.parsetext, this.currentParseTokenIndex, this.treantCST, this.treantAST];
+            return [this.parsetext, this.currentParseTokenIndex, this.treantCST, this.treantAST, this.ast];
         };
         Parser.parseProgram = function () {
             this.cst = new TSC.Tree();
             this.ast = new TSC.Tree();
             this.cst.addNode("Program" + programCount);
             if (this.parseBlock(false)) {
-                console.log("Parsed that block");
                 if (!this.matchToken("T_EOP", false)) {
                     return false;
                 }
@@ -53,9 +52,7 @@ var TSC;
             }
         };
         Parser.parseBlock = function (inStatementOrExpr) {
-            console.log("parse block");
             if (!this.matchToken("T_L_BRACE", inStatementOrExpr)) {
-                console.log("Couldn't parse block: no L Brace");
                 return false;
             }
             else {
@@ -68,9 +65,6 @@ var TSC;
                 if (this.parseStatementList()) {
                     this.cst.moveUp();
                     if (this.matchToken("T_R_BRACE", inStatementOrExpr)) {
-                        console.log("Made it passed R BRACE");
-                        console.log(currentParseToken.type);
-                        console.log("Over here");
                         return true;
                     }
                     else {
@@ -78,40 +72,30 @@ var TSC;
                     }
                 }
                 else {
-                    console.log("big chuppppss");
                     return false;
                 }
             }
         };
         Parser.parseStatementList = function () {
-            console.log("Inside ParseStatementList");
             this.cst.addNode("StatementList");
             if (this.parseStatement()) {
-                console.log("Parse Statement");
                 this.cst.moveUp();
                 //this.cst.moveUp();
                 if (this.parseStatementList()) {
-                    console.log("Parse StatementList");
                     this.cst.moveUp();
                     return true;
                 }
             }
             else {
                 // an empty statement is also valid
-                console.log("Couldn't Parse Statement");
                 if (!parseErrorFound) {
-                    console.log("Empty Statement");
                     this.parsetext += "Parsed \u03B5 at line " + (currentParseToken.lineNumber - 1) + " index " + currentParseToken.index + "\n";
-                    console.log("Parsed \u03B5 at line " + (currentParseToken.lineNumber - 1) + " index " + currentParseToken.index + "\n");
                     this.cst.addNode("\u03B5");
                     this.cst.moveUp();
                     this.cst.moveUp();
                     return true;
                 }
                 else {
-                    console.log("Statement Error");
-                    console.log("Error Found?" + parseErrorFound);
-                    console.log(errorText);
                     return false;
                 }
             }
@@ -122,7 +106,6 @@ var TSC;
                 this.parseWhileStatement() || this.parseIfStatement() || this.parseBlock(true)) {
                 this.cst.moveUp();
                 this.ast.moveUp();
-                console.log("got something here boss");
                 return true;
             }
             else {
@@ -174,7 +157,6 @@ var TSC;
         Parser.parseVarDecl = function () {
             // parse type
             if (this.matchToken("T_INT", true) || this.matchToken("T_BOOLEAN", true) || this.matchToken("T_STRING", true)) {
-                console.log("found var decl");
                 this.cst.moveUp();
                 this.cst.moveUp();
                 this.ast.moveUp();
@@ -368,7 +350,6 @@ var TSC;
                     this.ast.addNode(currentParseToken.type);
                 }
                 this.parsetext += "Expected " + token + " and found " + currentParseToken.type + " [" + currentParseToken.value + "] at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                console.log("Expected " + token + " and found " + currentParseToken.type + " [" + currentParseToken.value + "] at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n");
                 this.cst.addNode(currentParseToken);
                 //if (currentParseToken.type == "T_DIGIT" || currentParseToken.type == "T_ID")
                 //this.ast.addNode(currentParseToken);
@@ -379,9 +360,7 @@ var TSC;
             }
             else {
                 if (!parseErrorFound && !inStatementOrExpr && currentParseToken.type != "T_R_BRACE") {
-                    console.log("There seems to be an error");
                     errorText = "Parse Error: Expected " + token + " and found " + currentParseToken.type + " at line " + currentParseToken.lineNumber + " index " + currentParseToken.index + "\n";
-                    console.log(errorText);
                     parseErrorFound = true;
                     this.parseErrorCount++;
                 }
