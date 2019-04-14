@@ -23,8 +23,10 @@ module TSC {
             this.traverseTree(ast.root);
             for (var i = 0; i < this.symbols.length; i++) {
                 var currentSymbol = this.symbols[i];
-                if (currentSymbol["initialized"] == false) {
-                    warningText += "Semantics Warning: Variable " + currentSymbol["name"] + " has been declared but not initialized on line " + currentSymbol["lineNumber"] + " index " + currentSymbol["index"];
+                if (currentSymbol["initialized"] == false && currentSymbol["warningPrinted"] == false) {
+                    warningText += "Semantics Warning: Variable " + currentSymbol["name"] + " has been declared but not initialized on line " + currentSymbol["lineNumber"] + " index " + currentSymbol["index"] + "\n";
+                    // To make sure we don't repeat warnings between programs
+                    currentSymbol["warningPrinted"] = true;
                 }
             }
             console.log(errorText + " is the error");
@@ -53,6 +55,8 @@ module TSC {
                 this.symbol["lineNumber"] = node.children[1].lineNumber;
                 this.symbol["index"] = node.children[1].index;
                 this.symbol["initialized"] = false;
+                this.symbol["program"] = programCount;
+                this.symbol["warningPrinted"] = false;
                 console.log(this.symbol);
                 console.log(this.symbols);
                 this.symbols.push(this.symbol);
