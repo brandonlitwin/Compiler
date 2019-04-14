@@ -274,7 +274,6 @@ var TSC;
                                         inString = false;
                                         if (!EOPFound) {
                                             //programCount++;
-                                            console.log(lextext);
                                             currentTokenIndex++;
                                             return [lextext, currentTokenIndex];
                                         }
@@ -405,7 +404,6 @@ var TSC;
                         }
                     }
                 }
-                console.log(lextext);
                 return [lextext, currentTokenIndex];
             }
         };

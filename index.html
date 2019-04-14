@@ -183,6 +183,15 @@ CMPT 432 - Compilers
 							};
 							var visual_ast = new Treant(ast_chart_config);
 							semanticresults = _SemanticsAnalyzer.analyze(ASTStructure);
+							if (errorText != "") {
+								putMessage(errorText);
+								errorText = "";
+							} else {
+								putMessage(semanticresults[0]);
+								if (warningText != "") {
+									putMessage(warningText);
+								}
+							}
 						}
 						
 							

@@ -276,7 +276,6 @@ module TSC
 										inString = false;
 										if (!EOPFound) {
 											//programCount++;
-											console.log(lextext);
 											currentTokenIndex++;
 											return [lextext, currentTokenIndex];
 										}
@@ -410,7 +409,6 @@ module TSC
 					}	
 									
 				}
-				console.log(lextext);
 				return [lextext, currentTokenIndex];	
 			}
 				
