@@ -10,6 +10,7 @@ var TSC;
         }
         SemanticsAnalyzer.analyze = function (ast) {
             this.semanticErrorCount = 0;
+            this.semanticWarningCount = 0;
             errorText = "";
             warningText = "";
             this.ast = ast;
@@ -18,18 +19,20 @@ var TSC;
             this.traverseTree(ast.root);
             for (var i = 0; i < this.symbols.length; i++) {
                 var currentSymbol = this.symbols[i];
-                if (currentSymbol["initialized"] == false && currentSymbol["warningPrinted"] == false) {
+                if (currentSymbol["initialized"] == false && currentSymbol["program"] == programCount) {
                     warningText += "Semantics Warning: Variable " + currentSymbol["name"] + " has been declared but not initialized on line " + currentSymbol["lineNumber"] + " index " + currentSymbol["index"] + "\n";
-                    // To make sure we don't repeat warnings between programs
-                    currentSymbol["warningPrinted"] = true;
+                    this.semanticWarningCount++;
                 }
             }
-            console.log(errorText + " is the error");
             if (errorText == "") {
                 this.semantictext += "Semantics Analysis of program " + programCount + " completed with no errors!\n";
             }
             else {
+                console.log(errorText + " is the error");
                 errorText += "Found " + this.semanticErrorCount + " semantics errors\n";
+            }
+            if (warningText != "") {
+                warningText += "Found " + this.semanticWarningCount + " semantics warnings\n";
             }
             return [this.semantictext, this.symbols];
         };
@@ -52,7 +55,6 @@ var TSC;
                 this.symbol["index"] = node.children[1].index;
                 this.symbol["initialized"] = false;
                 this.symbol["program"] = programCount;
-                this.symbol["warningPrinted"] = false;
                 console.log(this.symbol);
                 console.log(this.symbols);
                 this.symbols.push(this.symbol);
@@ -80,6 +82,41 @@ var TSC;
                 else {
                     errorText = "Semantics Error: Use of Undeclared Variable " + variableAssigned.value + " on line " + variableAssigned.lineNumber + " index " + variableAssigned.index + "\n";
                     this.semanticErrorCount++;
+                }
+            }
+            else if (node.value == "PrintStatement") {
+                var variableUsed = node.children[0];
+                this.checkUsedNotInitialized(variableUsed);
+            }
+            else if (node.value == "IfStatement") {
+                var variableUsed = node.children[0].children[0];
+                this.checkUsedNotInitialized(variableUsed);
+                // Check inner block
+                for (var i = 0; i < node.children.length; i++) {
+                    this.traverseTree(node.children[i]);
+                }
+            }
+            else if (node.value == "WhileStatement") {
+                var variableUsed = node.children[0].children[0];
+                this.checkUsedNotInitialized(variableUsed);
+                // Check inner block
+                for (var i = 0; i < node.children.length; i++) {
+                    this.traverseTree(node.children[i]);
+                }
+            }
+        };
+        SemanticsAnalyzer.checkUsedNotInitialized = function (variable) {
+            console.log("in this bitch");
+            for (var i = 0; i < this.symbols.length; i++) {
+                var currentSymbol = this.symbols[i];
+                if (currentSymbol["name"] == variable.value && currentSymbol["program"] == programCount) {
+                    if (currentSymbol["initialized"] == true) {
+                        this.semantictext += "Variable " + variable.value + " has been used on line " + variable.lineNumber + " index " + variable.index + "\n";
+                    }
+                    else {
+                        warningText += "Semantics Warning: Variable " + variable.value + " has been used before being initialized on line " + variable.lineNumber + " index " + variable.index + "\n";
+                        this.semanticWarningCount++;
+                    }
                 }
             }
         };
