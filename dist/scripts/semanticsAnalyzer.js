@@ -101,6 +101,11 @@ var TSC;
                     this.traverseTree(node.children[i]);
                 }
             }
+            else if (node.value == "T_EQUALS") {
+                var variable = node.children[0];
+                var value = node.children[1];
+                this.typeCheckInExpression(variable, value);
+            }
         };
         SemanticsAnalyzer.checkUsedNotInitialized = function (variable) {
             for (var i = 0; i < this.symbols.length; i++) {
@@ -153,6 +158,33 @@ var TSC;
                     }
                     else {
                         errorText = "Semantics Error: Type Assigned [" + typeAssigned + "] does not match declared type [" + currentSymbol["type"] + "] for variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + "\n";
+                        this.semanticErrorCount++;
+                    }
+                }
+            }
+        };
+        SemanticsAnalyzer.typeCheckInExpression = function (variable, value) {
+            var string = new RegExp('"[a-z]*"');
+            var digit = new RegExp('[0-9]+');
+            var typeComparedTo;
+            if (value.value == "true" || value.value == "false") {
+                typeComparedTo = "boolean";
+            }
+            else if (string.test(value.value)) {
+                typeComparedTo = "string";
+            }
+            else if (digit.test(value.value)) {
+                typeComparedTo = "int";
+            }
+            for (var i = 0; i < this.symbols.length; i++) {
+                var currentSymbol = this.symbols[i];
+                if (variable.value == currentSymbol["name"] && currentSymbol["program"] == programCount) {
+                    // check if current symbol's type = type of value
+                    if (currentSymbol["type"] == typeComparedTo) {
+                        this.semantictext += "Type being compared to [" + typeComparedTo + "] matches declared type [" + currentSymbol["type"] + "] for variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + "\n";
+                    }
+                    else {
+                        errorText = "Semantics Error: Type being compared to [" + typeComparedTo + "] does not match declared type [" + currentSymbol["type"] + "] for variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + "\n";
                         this.semanticErrorCount++;
                     }
                 }
