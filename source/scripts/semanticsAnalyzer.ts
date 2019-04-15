@@ -34,7 +34,7 @@ module TSC {
                 this.semantictext += "Semantics Analysis of program " + programCount + " completed with no errors!\n";
             } else {
                 console.log(errorText + " is the error");
-                errorText += "Found " + this.semanticErrorCount + " semantics errors\n";
+                //errorText += "Found a semantics error\n";
             }
             if (warningText != "") {
                 warningText += "Found " + this.semanticWarningCount + " semantics warnings\n";
@@ -48,7 +48,10 @@ module TSC {
             if (node.value.includes("Block")) {
                 this.scopeLevel++;
                 for(var i = 0; i < node.children.length; i++){
-                    this.traverseTree(node.children[i]);
+                    if (this.semanticErrorCount == 0) {
+                        this.traverseTree(node.children[i]);
+                    }
+                    
                 }
                 console.log("finished traversing block");
                 return;
@@ -69,33 +72,23 @@ module TSC {
             } else if (node.value == "AssignmentStatement") {
                 var variableAssigned = node.children[0];
                 var valueAssigned = node.children[1];
-                var varNotFound = true;
-                // Checking for assigned variable in list of symbols
+                this.checkUsedNotDeclared(variableAssigned);
+                // Checking for assigned variable in list of symbols and marking them as initialized
                 for (var i = 0; i < this.symbols.length; i++) {
-                    if (variableAssigned.value == this.symbols[i]["name"]) {
-                        this.symbols[i]["initialized"] = true;
-                        varNotFound = false;
-                    }
-                }
-                if (varNotFound == false) {
-                    if (valueAssigned != null) {
+                    if (variableAssigned.value == this.symbols[i]["name"] && valueAssigned != null) {
                         this.semantictext += "Variable " + variableAssigned.value + " has been initialized on line " + valueAssigned.lineNumber + " index " + valueAssigned.index + "\n";
-                    } /*else {
-                        errorText = "Semantics Error: Variable " + variableAssigned.value + " on line " + variableAssigned.lineNumber + " index " + valueAssigned.index + " has been declared but not initialized\n";
-                        this.semanticErrorCount++;
-                    }*/
-                    
-                } else {
-                    errorText = "Semantics Error: Use of Undeclared Variable " + variableAssigned.value + " on line " + variableAssigned.lineNumber + " index " + variableAssigned.index + "\n";
-                    this.semanticErrorCount++;
+                        this.symbols[i]["initialized"] = true;
+                    }
                 }
 
             } else if (node.value == "PrintStatement") {
                 var variableUsed = node.children[0];
+                this.checkUsedNotDeclared(variableUsed);
                 this.checkUsedNotInitialized(variableUsed);
                 
             } else if (node.value == "IfStatement") {
                 var variableUsed = node.children[0].children[0];
+                this.checkUsedNotDeclared(variableUsed);
                 this.checkUsedNotInitialized(variableUsed);
                 // Check inner block
                 for(var i = 0; i < node.children.length; i++){
@@ -105,6 +98,7 @@ module TSC {
 
             } else if (node.value == "WhileStatement") {
                 var variableUsed = node.children[0].children[0];
+                this.checkUsedNotDeclared(variableUsed);
                 this.checkUsedNotInitialized(variableUsed);
                  // Check inner block
                  for(var i = 0; i < node.children.length; i++){
@@ -115,7 +109,6 @@ module TSC {
 
         }
         public static checkUsedNotInitialized(variable: any) {
-            console.log("in this bitch");
             for (var i = 0; i < this.symbols.length; i++) {
                 var currentSymbol = this.symbols[i];
                 if (currentSymbol["name"] == variable.value && currentSymbol["program"] == programCount) {
@@ -127,6 +120,20 @@ module TSC {
                       
                    }
                 }
+            }
+        }
+        public static checkUsedNotDeclared(variable: any) {
+            // Checking for assigned variable in list of symbols
+            var varNotFound = true;
+            for (var i = 0; i < this.symbols.length; i++) {
+                var currentSymbol = this.symbols[i];
+                if (variable.value == currentSymbol["name"] && currentSymbol["program"] == programCount) {
+                    varNotFound = false;
+                }
+            }
+            if (varNotFound == true) {
+                errorText = "Semantics Error: Use of Undeclared Variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + "\n";
+                this.semanticErrorCount++;
             }
         }
     }
