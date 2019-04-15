@@ -53,6 +53,7 @@ module TSC {
                     }
                     
                 }
+                this.scopeLevel--;
                 console.log("finished traversing block");
                 return;
             } else if (node.value == "VarDecl") {
@@ -75,7 +76,7 @@ module TSC {
                 // Checking for assigned variable in list of symbols and marking them as initialized
                 for (var i = 0; i < this.symbols.length; i++) {
                     if (variableAssigned.value == this.symbols[i]["name"] && valueAssigned != null) {
-                        this.semantictext += "Variable " + variableAssigned.value + " has been initialized on line " + valueAssigned.lineNumber + " index " + valueAssigned.index + "\n";
+                        this.semantictext += "Variable " + variableAssigned.value + " on line " + valueAssigned.lineNumber + " index " + valueAssigned.index + " has been initialize\n";
                         this.symbols[i]["initialized"] = true;
                     }
                 }
@@ -120,7 +121,7 @@ module TSC {
                 var currentSymbol = this.symbols[i];
                 if (currentSymbol["name"] == variable.value && currentSymbol["program"] == programCount) {
                    if (currentSymbol["initialized"] == true) {
-                       this.semantictext += "Variable " + variable.value + " has been used on line " + variable.lineNumber + " index " + variable.index + "\n";
+                       this.semantictext += "Variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + " has been used\n";
                    } else {
                         warningText += "Semantics Warning: Variable " + variable.value + " has been used before being initialized on line " + variable.lineNumber + " index " + variable.index + "\n";
                         this.semanticWarningCount++;
@@ -134,7 +135,7 @@ module TSC {
             var varNotFound = true;
             for (var i = 0; i < this.symbols.length; i++) {
                 var currentSymbol = this.symbols[i];
-                if (variable.value == currentSymbol["name"] && currentSymbol["program"] == programCount) {
+                if (variable.value == currentSymbol["name"] && currentSymbol["program"] == programCount && this.scopeLevel >= currentSymbol["scope"]) {
                     varNotFound = false;
                 }
             }
@@ -142,7 +143,7 @@ module TSC {
                 errorText = "Semantics Error: Use of Undeclared Variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + "\n";
                 this.semanticErrorCount++;
             } else {
-                this.semantictext += "Variable " + variable.value + " has been declared on line " + variable.lineNumber +  " index " + variable.index + "\n";
+                this.semantictext += "Variable " + variable.value + " on line " + variable.lineNumber +  " index " + variable.index + " has been declared\n";
             }
         }
         public static typeCheck(variable, value) {
