@@ -67,7 +67,6 @@ module TSC {
                 console.log(this.symbols);
                 this.symbols.push(this.symbol);
                 
-                this.semantictext += "Variable " + this.symbol["name"] + " has been declared on line " + this.symbol["lineNumber"] +  " index " + this.symbol["index"] + "\n";
 
             } else if (node.value == "AssignmentStatement") {
                 var variableAssigned = node.children[0];
@@ -142,6 +141,8 @@ module TSC {
             if (varNotFound == true) {
                 errorText = "Semantics Error: Use of Undeclared Variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + "\n";
                 this.semanticErrorCount++;
+            } else {
+                this.semantictext += "Variable " + variable.value + " has been declared on line " + variable.lineNumber +  " index " + variable.index + "\n";
             }
         }
         public static typeCheck(variable, value) {
