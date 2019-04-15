@@ -80,18 +80,22 @@ module TSC {
                         this.symbols[i]["initialized"] = true;
                     }
                 }
+                this.typeCheck(variableAssigned, valueAssigned);
 
             } else if (node.value == "PrintStatement") {
                 var variableUsed = node.children[0];
-                this.checkUsedNotDeclared(variableUsed);
-                this.checkUsedNotInitialized(variableUsed);
+                // Only check on vars, not strings
+                if (!variableUsed.value.includes('"')) {
+                    this.checkUsedNotDeclared(variableUsed);
+                    this.checkUsedNotInitialized(variableUsed);
+                }
                 
             } else if (node.value == "IfStatement") {
                 var variableUsed = node.children[0].children[0];
                 this.checkUsedNotDeclared(variableUsed);
                 this.checkUsedNotInitialized(variableUsed);
                 // Check inner block
-                for(var i = 0; i < node.children.length; i++){
+                for (var i = 0; i < node.children.length; i++){
                     this.traverseTree(node.children[i]);
                 }
                 
@@ -101,7 +105,7 @@ module TSC {
                 this.checkUsedNotDeclared(variableUsed);
                 this.checkUsedNotInitialized(variableUsed);
                  // Check inner block
-                 for(var i = 0; i < node.children.length; i++){
+                 for (var i = 0; i < node.children.length; i++){
                     this.traverseTree(node.children[i]);
                 }
 
@@ -134,6 +138,31 @@ module TSC {
             if (varNotFound == true) {
                 errorText = "Semantics Error: Use of Undeclared Variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + "\n";
                 this.semanticErrorCount++;
+            }
+        }
+        public static typeCheck(variable, value) {
+            var string = new RegExp('"[a-z]*"');
+			var digit = new RegExp('[0-9]+');
+            var typeAssigned;
+            console.log(value);
+            if (value.value == "true" || value.value == "false") {
+                typeAssigned = "boolean";
+            } else if (string.test(value.value)) {
+                typeAssigned = "string";
+            } else if (digit.test(value.value)) {
+                typeAssigned = "int";
+            }
+            for (var i = 0; i < this.symbols.length; i++) {
+                var currentSymbol = this.symbols[i];
+                if (variable.value == currentSymbol["name"] && currentSymbol["program"] == programCount) {
+                    // check if current symbol's type = type of value
+                    if (currentSymbol["type"] == typeAssigned) {
+                        this.semantictext += "Type Assigned [" + typeAssigned + "] matches declared type [" + currentSymbol["type"] + "] for variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + "\n";
+                    } else {
+                        errorText = "Semantics Error: Type Assigned [" + typeAssigned + "] does not match declared type [" + currentSymbol["type"] + "] for variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + "\n";
+                        this.semanticErrorCount++;
+                    }
+                }
             }
         }
     }

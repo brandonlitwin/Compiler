@@ -13,6 +13,7 @@ module TSC {
         static ast: Tree = new Tree();
         static treantCST;
         static treantAST;
+        static currentString: string;
         public static parse(tokenIndex, treantCST, treantAST) {
             parseErrorFound = false;
             this.treantCST = treantCST;
@@ -120,7 +121,9 @@ module TSC {
                 if (this.matchToken("T_L_PAREN", false)) 
                     //this.cst.moveUp();
                     if (this.parseExpr()) {
-                        this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-1].value, validLexedTokens[this.currentParseTokenIndex-1].lineNumber, validLexedTokens[this.currentParseTokenIndex-1].index);
+                        if (validLexedTokens[this.currentParseTokenIndex-1].value != '"') {
+                            this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-1].value, validLexedTokens[this.currentParseTokenIndex-1].lineNumber, validLexedTokens[this.currentParseTokenIndex-1].index);
+                        }
                         this.cst.moveUp();
                         this.ast.moveUp();
                     }
@@ -166,7 +169,7 @@ module TSC {
                 this.ast.moveUp();
                 this.cst.addNode("Id", currentParseToken.lineNumber, currentParseToken.index-1); 
                 if (this.matchToken("T_ID", false)) {
-                    this.ast.addNode(validLexedTokens[(this.currentParseTokenIndex-1)].value, validLexedTokens[(this.currentParseTokenIndex-1)].lineNumber, validLexedTokens[(this.currentParseTokenIndex-1)].index);;
+                    this.ast.addNode(validLexedTokens[(this.currentParseTokenIndex-1)].value, validLexedTokens[(this.currentParseTokenIndex-1)].lineNumber, validLexedTokens[(this.currentParseTokenIndex-1)].index);
                     this.cst.moveUp();
                     this.ast.moveUp();
                     //this.ast.makeNodeChildOf(this.ast.currNode, "Block(Program"+programCount+")");
@@ -241,6 +244,7 @@ module TSC {
                 return false;
             } else {
                 if (this.matchToken("T_TRUE", true) || this.matchToken("T_FALSE", true)) {
+                    this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-1].value, validLexedTokens[this.currentParseTokenIndex-1].lineNumber, validLexedTokens[this.currentParseTokenIndex-1].index);
                     this.cst.moveUp();
                     return true;
                 } 
@@ -276,6 +280,7 @@ module TSC {
         public static parseStringExpr() {
             //this.cst.addNode("StringExpression");
             if (this.matchToken("T_QUOTE", true)) {
+                this.currentString = "";
                 this.cst.moveUp();
                 if (this.cst.currNode.value.type == "T_QUOTE")
                     this.cst.makeNodeChildOf(this.cst.currNode, "StringExpr");
@@ -285,6 +290,7 @@ module TSC {
                         //this.cst.moveUp();
                         if (this.cst.currNode.value.type == "T_QUOTE")
                             this.cst.makeNodeChildOf(this.cst.currNode, "Expression");
+                            this.ast.addNode('"'+this.currentString, currentParseToken.lineNumber, currentParseToken.index);
                         return true;
                     }
                 }
@@ -294,6 +300,7 @@ module TSC {
         }
         public static parseCharList() {
             //this.cst.addNode("CharList");
+            this.currentString += currentParseToken.value;
             if (this.matchToken("T_Char", true)) {
                 this.cst.moveUp();
                 if (this.cst.currNode.value == "CharList") {
