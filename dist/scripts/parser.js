@@ -235,6 +235,9 @@ var TSC;
                         this.ast.moveUp();
                         //this.ast.makeNodeChildOf(this.cst.currNode, "IfStatement");
                         if (this.parseExpr()) {
+                            if (validLexedTokens[this.currentParseTokenIndex - 1].type == "T_ID") {
+                                this.ast.addNode(validLexedTokens[this.currentParseTokenIndex - 1].value, validLexedTokens[this.currentParseTokenIndex - 1].lineNumber, validLexedTokens[this.currentParseTokenIndex - 1].index);
+                            }
                             //console.log(validLexedTokens[this.currentParseTokenIndex-1].value);
                             //this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-1].value, validLexedTokens[this.currentParseTokenIndex-1].lineNumber, validLexedTokens[this.currentParseTokenIndex-1].index);
                             if (this.matchToken("T_R_PAREN", false)) {
