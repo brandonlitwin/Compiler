@@ -14,7 +14,6 @@ var TSC;
             errorText = "";
             warningText = "";
             this.ast = ast;
-            console.log(ast);
             this.semantictext = "Semantics Analysis of program " + programCount + "...\n";
             this.traverseTree(ast.root);
             for (var i = 0; i < this.symbols.length; i++) {
@@ -27,10 +26,6 @@ var TSC;
             if (errorText == "") {
                 this.semantictext += "Semantics Analysis of program " + programCount + " completed with no errors!\n";
             }
-            else {
-                console.log(errorText + " is the error");
-                //errorText += "Found a semantics error\n";
-            }
             if (warningText != "") {
                 warningText += "Found " + this.semanticWarningCount + " semantics warnings\n";
             }
@@ -38,7 +33,6 @@ var TSC;
         };
         SemanticsAnalyzer.traverseTree = function (node) {
             this.symbol = {};
-            console.log("traversing to node " + node.value);
             if (node.value.includes("Block")) {
                 this.scopeLevel++;
                 for (var i = 0; i < node.children.length; i++) {
@@ -47,7 +41,6 @@ var TSC;
                     }
                 }
                 this.scopeLevel--;
-                console.log("finished traversing block");
                 return;
             }
             else if (node.value == "VarDecl") {
@@ -58,8 +51,6 @@ var TSC;
                 this.symbol["index"] = node.children[1].index;
                 this.symbol["initialized"] = false;
                 this.symbol["program"] = programCount;
-                console.log(this.symbol);
-                console.log(this.symbols);
                 this.symbols.push(this.symbol);
             }
             else if (node.value == "AssignmentStatement") {
@@ -142,7 +133,6 @@ var TSC;
             var string = new RegExp('"[a-z]*"');
             var digit = new RegExp('[0-9]+');
             var typeAssigned;
-            console.log(value);
             if (value.value == "true" || value.value == "false") {
                 typeAssigned = "boolean";
             }
