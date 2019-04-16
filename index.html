@@ -78,7 +78,8 @@ CMPT 432 - Compilers
 			currentToken = ' ';
 			errorCount = 0;    
 			verboseOn = true; 
-			currentParseTokenIndex = 0;   
+			currentParseTokenIndex = 0; 
+			semanticErrorFound = false;  
 			var cst_visual = new Treant({
 				chart: {
 					container: "#cst"
@@ -203,6 +204,7 @@ CMPT 432 - Compilers
 							var visual_ast = new Treant(ast_chart_config);
 							semanticresults = _SemanticsAnalyzer.analyze(ASTStructure);
 							if (errorText != "") {
+								semanticErrorFound = true;
 								putMessage("Found a semantics error!\n");
 								putMessage(errorText);
 								errorText = "";
@@ -211,13 +213,16 @@ CMPT 432 - Compilers
 								if (warningText != "") {
 									putMessage(warningText);
 								}
-								displaySymbolTable(semanticresults[1]);
+								
 							}
 						}
 						
 							
 						
 					}
+				}
+				if (!semanticErrorFound) {
+					displaySymbolTable(semanticresults[1]);
 				}
 			}
 				

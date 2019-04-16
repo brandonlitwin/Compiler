@@ -30,4 +30,5 @@ var lineNumber = 1;
 var lastEndLineIndex = 0;
 var validLexedTokens = [];
 var currentParseToken;
+var semanticErrorFound = false;
 //var currentParseTokenIndex = 0;
