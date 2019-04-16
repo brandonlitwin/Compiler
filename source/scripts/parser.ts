@@ -121,7 +121,11 @@ module TSC {
                 if (this.matchToken("T_L_PAREN", false)) 
                     //this.cst.moveUp();
                     if (this.parseExpr()) {
-                        if (validLexedTokens[this.currentParseTokenIndex-1].value != '"') {
+                        var value = validLexedTokens[this.currentParseTokenIndex-1].value;
+                        if (value != '"' && value != ')' && value != 'true' && value != 'false') {
+                            //console.log(validLexedTokens[this.currentParseTokenIndex-2].value);
+                            //console.log(validLexedTokens[this.currentParseTokenIndex-1].value);
+                            //console.log(validLexedTokens[this.currentParseTokenIndex].value);
                             this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-1].value, validLexedTokens[this.currentParseTokenIndex-1].lineNumber, validLexedTokens[this.currentParseTokenIndex-1].index);
                         }
                         this.cst.moveUp();
@@ -152,6 +156,10 @@ module TSC {
                 if (this.matchToken("T_ASSIGNMENT_OP", false)) 
                     this.ast.moveUp();
                     if (this.parseExpr()) {
+                        if (validLexedTokens[this.currentParseTokenIndex-1].type == "T_ID") {
+                            this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-1].value, validLexedTokens[this.currentParseTokenIndex-1].lineNumber, validLexedTokens[this.currentParseTokenIndex-1].index);
+                        }
+                        //this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-1].value, validLexedTokens[this.currentParseTokenIndex-1].lineNumber, validLexedTokens[this.currentParseTokenIndex-1].index);
                         this.parsetext += "Parsed Assignment Statement at line " + (currentParseToken.lineNumber-1) + " index " + currentParseToken.index + "\n"; 
                         this.cst.moveUp();
                         this.ast.moveUp();
@@ -185,6 +193,7 @@ module TSC {
                 if (this.parseBooleanExpr()) {
                     if (this.parseBlock(true)) {
                         this.ast.moveUp();
+                        this.ast.moveUp();
                         this.cst.moveUp();
                         return true;
                     }
@@ -200,6 +209,7 @@ module TSC {
                     //this.ast.moveUp();
                     if(this.parseBlock(true)) {
                         //this.ast.addNode("Block");
+                        this.ast.moveUp();
                         this.ast.moveUp();
                         //this.ast.makeNodeChildOf(this.ast.currNode, "IfStatement");
                         this.cst.moveUp();
@@ -226,11 +236,14 @@ module TSC {
             if (this.matchToken("T_L_PAREN", true)) {
                 if (this.parseExpr()) {
                     //this.ast.moveUp();
-                    if (this.matchToken("T_EQUALS", false) || this.matchToken("T_NOT_EQUAL", false)) {
+                    if (this.matchToken("T_EQUALS", true) || this.matchToken("T_NOT_EQUAL", true)) {
+                        //console.log(validLexedTokens[this.currentParseTokenIndex-2].value);
                         this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-2].value, validLexedTokens[this.currentParseTokenIndex-2].lineNumber, validLexedTokens[this.currentParseTokenIndex-2].index);
                         this.ast.moveUp();
                         //this.ast.makeNodeChildOf(this.cst.currNode, "IfStatement");
                         if (this.parseExpr()) {
+                            //console.log(validLexedTokens[this.currentParseTokenIndex-1].value);
+                            //this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-1].value, validLexedTokens[this.currentParseTokenIndex-1].lineNumber, validLexedTokens[this.currentParseTokenIndex-1].index);
                             if (this.matchToken("T_R_PAREN", false)) {
                                 this.parsetext += "Parsed Boolean Expression at line " + (currentParseToken.lineNumber) + " index " + currentParseToken.index + "\n";
                                 this.cst.moveUp();
@@ -244,7 +257,14 @@ module TSC {
                 return false;
             } else {
                 if (this.matchToken("T_TRUE", true) || this.matchToken("T_FALSE", true)) {
+                    console.log("here");
+                    //console.log(currentParseToken);
+                    //console.log(validLexedTokens[this.currentParseTokenIndex-2].type);
+                    //console.log(validLexedTokens[this.currentParseTokenIndex-1].type);
+                    //console.log(validLexedTokens[this.currentParseTokenIndex].type);
+                    //if (validLexedTokens[this.currentParseTokenIndex-2].type != "T_PRINT") {
                     this.ast.addNode(validLexedTokens[this.currentParseTokenIndex-1].value, validLexedTokens[this.currentParseTokenIndex-1].lineNumber, validLexedTokens[this.currentParseTokenIndex-1].index);
+                    //}
                     this.cst.moveUp();
                     return true;
                 } 

@@ -62,7 +62,7 @@ var TSC;
                 // Checking for assigned variable in list of symbols and marking them as initialized
                 for (var i = 0; i < this.symbols.length; i++) {
                     if (variableAssigned.value == this.symbols[i]["name"] && valueAssigned != null) {
-                        this.semantictext += "Variable " + variableAssigned.value + " on line " + valueAssigned.lineNumber + " index " + valueAssigned.index + " has been initialized\n";
+                        this.semantictext += "Variable " + variableAssigned.value + " on line " + variableAssigned.lineNumber + " index " + variableAssigned.index + " has been initialized\n";
                         this.symbols[i]["initialized"] = true;
                     }
                 }
@@ -70,8 +70,10 @@ var TSC;
             }
             else if (node.value == "PrintStatement") {
                 var variableUsed = node.children[0];
+                var id = new RegExp('[a-z]');
                 // Only check on vars, not strings
-                if (!variableUsed.value.includes('"')) {
+                if (id.test(variableUsed.value) && variableUsed.length == 1) {
+                    //console.log(variableUsed.value);
                     this.checkUsedNotDeclared(variableUsed);
                     this.checkUsedNotInitialized(variableUsed);
                 }
@@ -146,6 +148,8 @@ var TSC;
             var string = new RegExp('"[a-z]*"');
             var digit = new RegExp('[0-9]+');
             var typeAssigned;
+            //console.log(variable);
+            //console.log(value);
             if (value.value == "true" || value.value == "false") {
                 typeAssigned = "boolean";
             }
