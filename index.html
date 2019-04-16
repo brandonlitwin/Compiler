@@ -202,7 +202,6 @@ CMPT 432 - Compilers
 								},
 								nodeStructure: treantASTStructure
 							};
-							var visual_ast = new Treant(ast_chart_config);
 							semanticresults = _SemanticsAnalyzer.analyze(ASTStructure);
 							if (errorText != "") {
 								semanticErrorFound = true;
@@ -210,6 +209,7 @@ CMPT 432 - Compilers
 								putMessage(errorText);
 								errorText = "";
 							} else {
+								var visual_ast = new Treant(ast_chart_config);
 								putMessage(semanticresults[0]);
 								if (warningText != "") {
 									putMessage(warningText);
