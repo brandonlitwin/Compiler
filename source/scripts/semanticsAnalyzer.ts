@@ -22,6 +22,7 @@ module TSC {
             this.ast = ast;
             this.semantictext = "Semantics Analysis of program " + programCount + "...\n";
             this.traverseTree(ast.root);
+            this.checkInitializedNotUsed();
             for (var i = 0; i < this.symbols.length; i++) {
                 var currentSymbol = this.symbols[i];
                 if (currentSymbol["initialized"] == false && currentSymbol["program"] == programCount) {
@@ -57,6 +58,7 @@ module TSC {
                 this.symbol["lineNumber"] = node.children[1].lineNumber;
                 this.symbol["index"] = node.children[1].index;
                 this.symbol["initialized"] = false;
+                this.symbol["used"] = false;
                 this.symbol["program"] = programCount;
                 this.symbols.push(this.symbol);
                 
@@ -68,7 +70,7 @@ module TSC {
                 // Checking for assigned variable in list of symbols and marking them as initialized
                 for (var i = 0; i < this.symbols.length; i++) {
                     if (variableAssigned.value == this.symbols[i]["name"] && valueAssigned != null) {
-                        this.semantictext += "Variable " + variableAssigned.value + " on line " + valueAssigned.lineNumber + " index " + valueAssigned.index + " has been initialize\n";
+                        this.semantictext += "Variable " + variableAssigned.value + " on line " + valueAssigned.lineNumber + " index " + valueAssigned.index + " has been initialized\n";
                         this.symbols[i]["initialized"] = true;
                     }
                 }
@@ -112,6 +114,7 @@ module TSC {
             for (var i = 0; i < this.symbols.length; i++) {
                 var currentSymbol = this.symbols[i];
                 if (currentSymbol["name"] == variable.value && currentSymbol["program"] == programCount) {
+                   currentSymbol["used"] = true;
                    if (currentSymbol["initialized"] == true) {
                        this.semantictext += "Variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + " has been used\n";
                    } else {
@@ -129,6 +132,7 @@ module TSC {
                 var currentSymbol = this.symbols[i];
                 if (variable.value == currentSymbol["name"] && currentSymbol["program"] == programCount && this.scopeLevel >= currentSymbol["scope"]) {
                     varNotFound = false;
+                    //currentSymbol["used"] = true;
                 }
             }
             if (varNotFound == true) {
@@ -136,6 +140,15 @@ module TSC {
                 this.semanticErrorCount++;
             } else {
                 this.semantictext += "Variable " + variable.value + " on line " + variable.lineNumber +  " index " + variable.index + " has been declared\n";
+            }
+        }
+        public static checkInitializedNotUsed() {
+            for (var i = 0; i < this.symbols.length; i++) {
+                var currentSymbol = this.symbols[i];
+                if (currentSymbol["initialized"] == true && currentSymbol["used"] == false) {
+                    warningText += "Semantics Warning: Variable " + currentSymbol["name"] + " has been initialized but not used on line " + currentSymbol["lineNumber"] + " index " + currentSymbol["index"] + "\n";
+                    this.semanticWarningCount++;
+                }
             }
         }
         public static typeCheck(variable, value) {

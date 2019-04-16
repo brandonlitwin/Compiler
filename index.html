@@ -51,6 +51,7 @@ CMPT 432 - Compilers
 					<th>Type</th>
 					<th>Scope</th>
 					<th>Initialized?</th>
+					<th>Used?</th>
 					<th>Line Number</th>
 					<th>Index</th>
 				</tr>
@@ -246,9 +247,11 @@ CMPT 432 - Compilers
 					scope.innerHTML = symbols[i]["scope"];
 					var initialized = row.insertCell(4);
 					initialized.innerHTML = symbols[i]["initialized"];
-					var lineNumber = row.insertCell(5);
+					var used = row.insertCell(5);
+					used.innerHTML = symbols[i]["used"];
+					var lineNumber = row.insertCell(6);
 					lineNumber.innerHTML = symbols[i]["lineNumber"];
-					var index = row.insertCell(6);
+					var index = row.insertCell(7);
 					index.innerHTML = symbols[i]["index"];
 				}
 		}
