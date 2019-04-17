@@ -80,7 +80,7 @@ module TSC {
                 var variableUsed = node.children[0];
                 var id = new RegExp('[a-z]');
                 // Only check on vars, not strings
-                if (id.test(variableUsed.value) && variableUsed.length == 1) {
+                if (id.test(variableUsed.value) && variableUsed.value.length == 1) {
                     //console.log(variableUsed.value);
                     this.checkUsedNotDeclared(variableUsed);
                     this.checkUsedNotInitialized(variableUsed);
@@ -106,12 +106,15 @@ module TSC {
                 }
 
             } else if (node.value == "T_EQUALS") {
+                var digit = new RegExp('[0-9]+');
                 var variable = node.children[0];
                 var value = node.children[1];
                 console.log(node.children);
                 this.typeCheckInExpression(variable, value);
-                this.checkUsedNotDeclared(value);
-                this.checkUsedNotInitialized(value);
+                if (value.value.length == 1 && !digit.test(value.value)) {
+                    this.checkUsedNotDeclared(value);
+                    this.checkUsedNotInitialized(value);
+                }
             }
 
         }
