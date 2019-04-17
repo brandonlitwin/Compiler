@@ -4,7 +4,7 @@ CMPT 432 - Compilers
 */
 var _Lexer = TSC.Lexer;
 var _Parser = TSC.Parser;
-
+var _SemanticsAnalyzer = TSC.SemanticsAnalyzer;
 // Global variables
     var tokens = "";
     var tokenIndex = 0;
@@ -30,4 +30,5 @@ var _Parser = TSC.Parser;
     var lastEndLineIndex = 0;
     var validLexedTokens = [];
     var currentParseToken;
+    var semanticErrorFound = false;
     //var currentParseTokenIndex = 0;

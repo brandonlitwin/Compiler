@@ -17,7 +17,7 @@ CMPT 432 - Compilers
 	<script type="text/javascript" src="codemirror/js/jquery.min.js"></script>
 	<script type="text/javascript" src="codemirror/plugin/lib/codemirror.js"></script>
 	<!--script type="text/javascript" src="codemirror/js/default.js"></script-->
-	<h1>Project Two Compiler</h1>
+	<h1>Project Three Compiler</h1>
 
     <div>
         <div class="source">
@@ -31,7 +31,8 @@ CMPT 432 - Compilers
 			<div>
 				<br><br>
 				<a href="Test Case Documentation/Lex_Test_Case_Documentation.pdf">Lex Test Cases</a><br><br><br>
-				<a href="Test Case Documentation/Parse_Test_Case_Documentation.pdf">Parse Test Cases</a><br><br>
+				<a href="Test Case Documentation/Parse_Test_Case_Documentation.pdf">Parse Test Cases</a><br><br><br>
+				<a href="Test Case Documentation/Semantics_Test_Case_Documentation.pdf">Semantics Test Cases</a><br><br>
 			</div>
 			<h2>Output</h2>
             <textarea id="taOutput"></textarea>
@@ -39,10 +40,33 @@ CMPT 432 - Compilers
 	</div>
 	<h1>Visual CST</h1>
 	<div id="cst" style="width:100%; height:400px"></div>
+	<h1>Visual AST</h1>
+	<div id="ast" style="width:100%; height:400px"></div>
+	<h1>Symbol Table</h1>
+	<div id="symbols" style="width:100%; height:200px">
+		<table id ="symbolTable">
+			<thead>
+				<tr>
+					<th>Program</th>
+					<th>Name</th>
+					<th>Type</th>
+					<th>Scope</th>
+					<th>Initialized?</th>
+					<th>Used?</th>
+					<th>Line Number</th>
+					<th>Index</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr></tr>
+			</tbody>
+		</table>
+	</div>
 	<script type="text/javascript" src="dist/Treant/Treant.js"></script>
 	<script type="text/javascript" src="dist/scripts/tree.js"></script>
 	<script type="text/javascript" src="dist/scripts/lexer.js"></script>	
 	<script type="text/javascript" src="dist/scripts/parser.js"></script>
+	<script type="text/javascript" src="dist/scripts/semanticsAnalyzer.js"></script>
 	<script type="text/javascript" src="dist/scripts/globals.js"></script>	
 	<script type="text/javascript" src="dist/scripts/token.js"></script>
 	<script type="text/javascript" src="dist/Treant/vendor/raphael.js"></script>
@@ -56,10 +80,17 @@ CMPT 432 - Compilers
 			currentToken = ' ';
 			errorCount = 0;    
 			verboseOn = true; 
-			currentParseTokenIndex = 0;   
+			currentParseTokenIndex = 0; 
+			semanticErrorFound = false;  
 			var cst_visual = new Treant({
 				chart: {
 					container: "#cst"
+				},
+				nodeStructure: {}
+			});
+			var ast_visual = new Treant({
+				chart: {
+					container: "#ast"
 				},
 				nodeStructure: {}
 			});
@@ -93,8 +124,22 @@ CMPT 432 - Compilers
 					]
 				}
 			};
+			var treantAST = {
+				chart: {
+					container: "#ast"
+				},
+				
+				nodeStructure: {
+					text: { name: "Root" },
+					children: [
+					]
+				}
+			};
 			var config = {
 				container: "#cst"
+			};
+			var config2 = {
+				container: "#ast"
 			};
 
 			var parent_node = {
@@ -111,12 +156,17 @@ CMPT 432 - Compilers
 				text: { name: "Second child" }
 			};
 
-			var simple_chart_config = [
+			var simple_cst_chart_config = [
 				config, parent_node,
+				first_child, second_child 
+			];
+			var simple_ast_chart_config = [
+				config2, parent_node,
 				first_child, second_child 
 			];
 			tokens = editor.getValue();
 			if (verboseOn) {
+				// Lexer
 				while (currentTokenIndex < tokens.length - 1) {
 					lexresults = _Lexer.lex(currentTokenIndex);
 					putMessage(lexresults[0]);
@@ -128,26 +178,54 @@ CMPT 432 - Compilers
 						validLexedTokens = [];
 					}
 					else {
-						parseresults = _Parser.parse(currentParseTokenIndex, treantCST);
+						// No Lex errors, move to Parser
+						parseresults = _Parser.parse(currentParseTokenIndex, treantCST, treantAST);
 						putMessage(parseresults[0]);
 						currentParseTokenIndex = parseresults[1];
 						treantCSTStructure = parseresults[2];
+						treantASTStructure = parseresults[3];
+						ASTStructure = parseresults[4];
 						if (errorText != ""){
 							putMessage(errorText);
 							errorText = "";
-						} /*else {
-							putMessage("Compilation finished with no errors!\n");	
-						}*/
-						var chart_config = {
-							chart: {
-								container: "#cst"
-							},
-							nodeStructure: treantCSTStructure
-						};
-						var visual_cst = new Treant(chart_config);
+						} else {
+							// No Parse errors, display CST and AST and do Semantics
+							var cst_chart_config = {
+								chart: {
+									container: "#cst"
+								},
+								nodeStructure: treantCSTStructure
+							};
+							var visual_cst = new Treant(cst_chart_config);
+							var ast_chart_config = {
+								chart: {
+									container: "#ast"
+								},
+								nodeStructure: treantASTStructure
+							};
+							//var visual_ast = new Treant(ast_chart_config);
+							semanticresults = _SemanticsAnalyzer.analyze(ASTStructure);
+							if (errorText != "") {
+								semanticErrorFound = true;
+								putMessage("Found a semantics error!\n");
+								putMessage(errorText);
+								errorText = "";
+							} else {
+								var visual_ast = new Treant(ast_chart_config);
+								putMessage(semanticresults[0]);
+								if (warningText != "") {
+									putMessage(warningText);
+								}
+								
+							}
+						}
+						
 							
 						
 					}
+				}
+				if (!semanticErrorFound) {
+					displaySymbolTable(semanticresults[1]);
 				}
 			}
 				
@@ -155,7 +233,30 @@ CMPT 432 - Compilers
     
 	    function putMessage(msg) {
 	        document.getElementById("taOutput").value += msg + "\n";
-	    }
+		}
+		
+		function displaySymbolTable(symbols) {
+			for (var i = 0; i < symbols.length; i++) {
+					var table = document.getElementById("symbolTable");
+					var row = table.insertRow(-1);
+					var program = row.insertCell(0);
+					program.innerHTML = symbols[i]["program"];
+					var name = row.insertCell(1);
+					name.innerHTML = symbols[i]["name"];
+					var type = row.insertCell(2);
+					type.innerHTML = symbols[i]["type"];
+					var scope = row.insertCell(3);
+					scope.innerHTML = symbols[i]["scope"];
+					var initialized = row.insertCell(4);
+					initialized.innerHTML = symbols[i]["initialized"];
+					var used = row.insertCell(5);
+					used.innerHTML = symbols[i]["used"];
+					var lineNumber = row.insertCell(6);
+					lineNumber.innerHTML = symbols[i]["lineNumber"];
+					var index = row.insertCell(7);
+					index.innerHTML = symbols[i]["index"];
+				}
+		}
     
     
 	 	

@@ -15,8 +15,8 @@ module TSC {
             this.currNode = null;
         }
 
-        public addNode(value: any) {
-            let node = new TreeNode(value);
+        public addNode(value: any, line: number, index: number) {
+            let node = new TreeNode(value, line, index);
             // if there is no root, make this node the root
             if (this.root == null) {
                 this.root = node;
@@ -79,6 +79,28 @@ module TSC {
             return treantTree;
 
         }
+        public buildAST(treantTree, node) {
+            let child = {};
+            
+            if (node.value.type != undefined) {
+                child = {
+                    text: { name: node.value.value },
+                    children: []
+                };
+                treantTree.children.push(child);
+            } else {
+                child = {
+                    text: { name: node.value },
+                    children: []
+                };
+                treantTree.children.push(child);
+            }
+            for (var i = 0; i < node.children.length; i++) {
+                this.buildAST(child, node.children[i]);
+            }
+            return treantTree;
+
+        }
 
         public toStringTree() {
             // print string representation of tree
@@ -111,10 +133,14 @@ module TSC {
     }
     export class TreeNode {
         value: any;
+        lineNumber: number;
+        index: number;
         parent: TreeNode;
         children = [];
-        constructor(value: any){
+        constructor(value: any, lineNumber: number, index: number){
             this.value = value;
+            this.lineNumber = lineNumber;
+            this.index = index;
         }
     }
 }

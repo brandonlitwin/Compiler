@@ -12,8 +12,8 @@ var TSC;
             this.root = null;
             this.currNode = null;
         }
-        Tree.prototype.addNode = function (value) {
-            var node = new TreeNode(value);
+        Tree.prototype.addNode = function (value, line, index) {
+            var node = new TreeNode(value, line, index);
             // if there is no root, make this node the root
             if (this.root == null) {
                 this.root = node;
@@ -71,6 +71,27 @@ var TSC;
             }
             return treantTree;
         };
+        Tree.prototype.buildAST = function (treantTree, node) {
+            var child = {};
+            if (node.value.type != undefined) {
+                child = {
+                    text: { name: node.value.value },
+                    children: []
+                };
+                treantTree.children.push(child);
+            }
+            else {
+                child = {
+                    text: { name: node.value },
+                    children: []
+                };
+                treantTree.children.push(child);
+            }
+            for (var i = 0; i < node.children.length; i++) {
+                this.buildAST(child, node.children[i]);
+            }
+            return treantTree;
+        };
         Tree.prototype.toStringTree = function () {
             // print string representation of tree
             var traversalResult = "";
@@ -101,9 +122,11 @@ var TSC;
     }());
     TSC.Tree = Tree;
     var TreeNode = /** @class */ (function () {
-        function TreeNode(value) {
+        function TreeNode(value, lineNumber, index) {
             this.children = [];
             this.value = value;
+            this.lineNumber = lineNumber;
+            this.index = index;
         }
         return TreeNode;
     }());
