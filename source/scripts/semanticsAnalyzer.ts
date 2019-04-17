@@ -109,7 +109,6 @@ module TSC {
                 var digit = new RegExp('[0-9]+');
                 var variable = node.children[0];
                 var value = node.children[1];
-                console.log(node.children);
                 this.typeCheckInExpression(variable, value);
                 if (value.value.length == 1 && !digit.test(value.value)) {
                     this.checkUsedNotDeclared(value);
@@ -119,10 +118,8 @@ module TSC {
 
         }
         public static checkUsedNotInitialized(variable: any) {
-            console.log(variable);
             for (var i = 0; i < this.symbols.length; i++) {
                 var currentSymbol = this.symbols[i];
-                console.log(currentSymbol);
                 if (currentSymbol["name"] == variable.value && currentSymbol["program"] == programCount) {
                    currentSymbol["used"] = true;
                    if (currentSymbol["initialized"] == true) {
@@ -199,8 +196,6 @@ module TSC {
             var string = new RegExp('"[a-z]*"');
 			var digit = new RegExp('[0-9]+');
             var typeAssigned;
-            console.log(variable);
-            console.log(value);
             if (value.value == "true" || value.value == "false") {
                 typeAssigned = "boolean";
             } else if (string.test(value.value)) {

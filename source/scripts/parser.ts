@@ -260,7 +260,6 @@ module TSC {
                 return false;
             } else {
                 if (this.matchToken("T_TRUE", true) || this.matchToken("T_FALSE", true)) {
-                    console.log("here");
                     //console.log(currentParseToken);
                     //console.log(validLexedTokens[this.currentParseTokenIndex-2].type);
                     //console.log(validLexedTokens[this.currentParseTokenIndex-1].type);
