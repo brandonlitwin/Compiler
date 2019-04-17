@@ -45,15 +45,17 @@ var TSC;
                 return;
             }
             else if (node.value == "VarDecl") {
-                this.symbol["type"] = node.children[0].value;
-                this.symbol["name"] = node.children[1].value;
-                this.symbol["scope"] = this.scopeLevel;
-                this.symbol["lineNumber"] = node.children[1].lineNumber;
-                this.symbol["index"] = node.children[1].index;
-                this.symbol["initialized"] = false;
-                this.symbol["used"] = false;
-                this.symbol["program"] = programCount;
-                this.symbols.push(this.symbol);
+                if (this.checkDuplicateVariable(node.children[1].value) == false) {
+                    this.symbol["type"] = node.children[0].value;
+                    this.symbol["name"] = node.children[1].value;
+                    this.symbol["scope"] = this.scopeLevel;
+                    this.symbol["lineNumber"] = node.children[1].lineNumber;
+                    this.symbol["index"] = node.children[1].index;
+                    this.symbol["initialized"] = false;
+                    this.symbol["used"] = false;
+                    this.symbol["program"] = programCount;
+                    this.symbols.push(this.symbol);
+                }
             }
             else if (node.value == "AssignmentStatement") {
                 var variableAssigned = node.children[0];
@@ -149,6 +151,18 @@ var TSC;
                 }
             }
         };
+        SemanticsAnalyzer.checkDuplicateVariable = function (variable) {
+            for (var i = 0; i < this.symbols.length; i++) {
+                var currentSymbol = this.symbols[i];
+                console.log(currentSymbol["name"]);
+                if (currentSymbol["name"] == variable && currentSymbol["program"] == programCount && currentSymbol["scope"] == this.scopeLevel) {
+                    errorText = "Semantics Error: Variable " + currentSymbol["name"] + " has already been declared on line " + currentSymbol["lineNumber"] + " index " + currentSymbol["index"] + "\n";
+                    this.semanticErrorCount++;
+                    return true;
+                }
+            }
+            return false;
+        };
         SemanticsAnalyzer.typeCheck = function (variable, value) {
             var string = new RegExp('"[a-z]*"');
             var digit = new RegExp('[0-9]+');
@@ -175,7 +189,7 @@ var TSC;
             }
             for (var i = 0; i < this.symbols.length; i++) {
                 var currentSymbol = this.symbols[i];
-                if (variable.value == currentSymbol["name"] && currentSymbol["program"] == programCount) {
+                if (variable.value == currentSymbol["name"] && currentSymbol["program"] == programCount && currentSymbol["scope"] == this.scopeLevel) {
                     // check if current symbol's type = type of value
                     if (currentSymbol["type"] == typeAssigned) {
                         this.semantictext += "Type Assigned [" + typeAssigned + "] matches declared type [" + currentSymbol["type"] + "] for variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + "\n";
