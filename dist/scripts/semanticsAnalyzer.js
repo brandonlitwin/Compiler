@@ -154,7 +154,6 @@ var TSC;
         SemanticsAnalyzer.checkDuplicateVariable = function (variable) {
             for (var i = 0; i < this.symbols.length; i++) {
                 var currentSymbol = this.symbols[i];
-                console.log(currentSymbol["name"]);
                 if (currentSymbol["name"] == variable && currentSymbol["program"] == programCount && currentSymbol["scope"] == this.scopeLevel) {
                     errorText = "Semantics Error: Variable " + currentSymbol["name"] + " has already been declared on line " + currentSymbol["lineNumber"] + " index " + currentSymbol["index"] + "\n";
                     this.semanticErrorCount++;
@@ -183,7 +182,14 @@ var TSC;
                 for (var i = 0; i < this.symbols.length; i++) {
                     var currentSymbol = this.symbols[i];
                     if (value.value == currentSymbol["name"] && currentSymbol["program"] == programCount) {
-                        typeAssigned = currentSymbol["type"];
+                        if (currentSymbol["scope"] <= this.scopeLevel) {
+                            typeAssigned = currentSymbol["type"];
+                        }
+                        else {
+                            errorText = "Semantics Error: Variable " + currentSymbol["name"] + " cannot be assigned to variable " + variable.value + " on line " + variable.lineNumber + " index " + variable.index + " as variable " + variable.value + " was declared at a deeper scope level";
+                            this.semanticErrorCount++;
+                            return;
+                        }
                     }
                 }
             }
