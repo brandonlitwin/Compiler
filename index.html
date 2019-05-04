@@ -71,6 +71,7 @@ CMPT 432 - Compilers
 	<script type="text/javascript" src="dist/scripts/lexer.js"></script>	
 	<script type="text/javascript" src="dist/scripts/parser.js"></script>
 	<script type="text/javascript" src="dist/scripts/semanticsAnalyzer.js"></script>
+	<script type="text/javascript" src="dist/scripts/codegen.js"></script>
 	<script type="text/javascript" src="dist/scripts/globals.js"></script>	
 	<script type="text/javascript" src="dist/scripts/token.js"></script>
 	<script type="text/javascript" src="dist/Treant/vendor/raphael.js"></script>
@@ -225,6 +226,8 @@ CMPT 432 - Compilers
 									putMessage("Found a code gen error!\n");
 									putMessage(errorText);
 								} else {
+									putMessage(codegenresults[1]);
+									putMessage("Code generation for program " + programCount + " finished with no errors!")
 									displayGeneratedCode(codegenresults[0]);
 								}
 								
