@@ -17,7 +17,7 @@ CMPT 432 - Compilers
 	<script type="text/javascript" src="codemirror/js/jquery.min.js"></script>
 	<script type="text/javascript" src="codemirror/plugin/lib/codemirror.js"></script>
 	<!--script type="text/javascript" src="codemirror/js/default.js"></script-->
-	<h1>Project Three Compiler</h1>
+	<h1>Project Four Compiler</h1>
 
     <div>
         <div class="source">
@@ -61,6 +61,10 @@ CMPT 432 - Compilers
 				<tr></tr>
 			</tbody>
 		</table>
+	</div>
+	<h1>Code Generation</h1>
+	<div id ="codegen">
+		<textarea id="codegenOutput" style="width:50%; height:200px; display: block; margin: auto;"></textarea>
 	</div>
 	<script type="text/javascript" src="dist/Treant/Treant.js"></script>
 	<script type="text/javascript" src="dist/scripts/tree.js"></script>
@@ -216,6 +220,13 @@ CMPT 432 - Compilers
 								if (warningText != "") {
 									putMessage(warningText);
 								}
+								codegenresults = _CodeGenerator.generate(semanticresults[0], semanticresults[1]);
+								if (errorText != "") {
+									putMessage("Found a code gen error!\n");
+									putMessage(errorText);
+								} else {
+									displayGeneratedCode(codegenresults[0]);
+								}
 								
 							}
 						}
@@ -256,6 +267,10 @@ CMPT 432 - Compilers
 					var index = row.insertCell(7);
 					index.innerHTML = symbols[i]["index"];
 				}
+		}
+
+		function displayGeneratedCode(code) {
+			document.getElementById("codegenOutput").innerHTML = code;
 		}
     
     
