@@ -30,6 +30,7 @@ var TSC;
                 return;
             }
             else if (node.value == "VarDecl") {
+                this.codetext += "Generating OP codes for a variable declaration in scope " + this.scopeLevel + "\n";
                 this.staticVar = {};
                 this.addCode("8D");
                 var tempVar = "T";
@@ -43,13 +44,12 @@ var TSC;
                 this.staticVars.push(this.staticVar);
             }
             else if (node.value == "AssignmentStatement") {
+                this.codetext += "Generating OP codes for an assignment statement in scope " + this.scopeLevel + "\n";
                 var variableAssigned = node.children[0].value;
                 var valueAssigned = node.children[1].value;
                 this.addCode("A9");
                 this.addCode("0" + valueAssigned.toString());
                 this.addCode("8D");
-                console.log(this.staticVars);
-                console.log(variableAssigned.toString());
                 // Find variable in list of static vars
                 for (var i = 0; i < this.staticVars.length; i++) {
                     if (this.staticVars[i]["Variable"] == variableAssigned) {
@@ -60,6 +60,19 @@ var TSC;
             }
             else if (node.value == "PrintStatement") {
                 // Check for the printed var's type in symbol table, making sure it matches the current scope
+                var variablePrinted = node.children[0].value;
+                this.codetext += "Generating OP codes for a print statement in scope " + this.scopeLevel + "\n";
+                this.addCode("AC");
+                for (var i = 0; i < this.staticVars.length; i++) {
+                    if (this.staticVars[i]["Variable"] == variablePrinted) {
+                        this.addCode(this.staticVar["Temp"].split(',')[0]);
+                        this.addCode(this.staticVar["Temp"].split(',')[1]);
+                    }
+                }
+                this.addCode("A2");
+                this.addCode("01");
+                this.addCode("FF");
+                this.addCode("00");
             }
         };
         CodeGenerator.addCode = function (code) {
