@@ -15,6 +15,8 @@ module TSC {
         static staticVars: Array<Object> = [];
         public static generate(ast, symbols) {
             this.generatedCode = "";
+            this.staticVars = [];
+            this.tempCounter = 0;
             errorText = "";
             warningText = "";
             this.codetext = "Generating code for program " + programCount + "...\n";

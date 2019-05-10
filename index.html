@@ -273,7 +273,11 @@ CMPT 432 - Compilers
 		}
 
 		function displayGeneratedCode(code) {
-			document.getElementById("codegenOutput").innerHTML = code;
+			var codeBox = document.getElementById("codegenOutput");
+			codeBox.innerHTML += "Program " + programCount + ":\n";
+			codeBox.innerHTML += code;
+			codeBox.innerHTML += "\n";
+			
 		}
     
     
