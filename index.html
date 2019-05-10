@@ -221,7 +221,7 @@ CMPT 432 - Compilers
 								if (warningText != "") {
 									putMessage(warningText);
 								}
-								codegenresults = _CodeGenerator.generate(semanticresults[0], semanticresults[1]);
+								codegenresults = _CodeGenerator.generate(ASTStructure, semanticresults[1]);
 								if (errorText != "") {
 									putMessage("Found a code gen error!\n");
 									putMessage(errorText);
