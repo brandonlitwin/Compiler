@@ -42,8 +42,8 @@ module TSC {
                 var tempVar = "T";
                 tempVar += this.tempCounter.toString();
                 this.addCode(tempVar);
-                this.addCode("XX");
-                this.staticVar["Temp"] = tempVar + "XX";
+                this.addCode("00");
+                this.staticVar["Temp"] = tempVar + ",00";
                 this.staticVar["Variable"] = node.children[1].value;
                 this.staticVar["Address"] = this.tempCounter;
                 this.tempCounter++;
@@ -51,6 +51,17 @@ module TSC {
 
             } else if (node.value == "AssignmentStatement") {
                 var variableAssigned = node.children[0].value;
+                var valueAssigned = node.children[1].value;
+                this.addCode("A9");
+                this.addCode("0" + valueAssigned.toString());
+                this.addCode("8D");
+                // Find variable in list of static vars
+                for (var i = 0; i < this.staticVars.length; i++) {
+                    if (this.staticVars[i]["Variable"] == variableAssigned) {
+                        this.addCode(this.staticVar["Temp"].split(',')[0]);
+                        this.addCode(this.staticVar["Temp"].split(',')[1]);
+                    }
+                }
 
             } else if (node.value == "PrintStatement") {
                 // Check for the printed var's type in symbol table, making sure it matches the current scope
