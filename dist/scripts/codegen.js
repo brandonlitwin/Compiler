@@ -20,6 +20,12 @@ var TSC;
             this.traverseTree(ast.root);
             this.addCode("00");
             this.backpatch();
+            while (this.codeCount < 256) {
+                this.generatedCode += "00";
+                this.generatedCode += " ";
+                this.codeCount++;
+            }
+            //this.addCode("00");
             return [this.generatedCode, this.codetext];
         };
         CodeGenerator.traverseTree = function (node) {
@@ -95,7 +101,13 @@ var TSC;
             for (var i = 0; i < this.staticVars.length; i++) {
                 // Convert all temp addresses to memory locations
                 if (this.staticVars[i]["Address"] == "") {
-                    this.staticVars[i]["Address"] = this.codeCount.toString(16).toUpperCase();
+                    var codeToHex = this.codeCount.toString(16).toUpperCase();
+                    if (codeToHex.length == 1) {
+                        this.staticVars[i]["Address"] = "0" + codeToHex;
+                    }
+                    else {
+                        this.staticVars[i]["Address"] = codeToHex;
+                    }
                     this.codeCount++;
                 }
             }
